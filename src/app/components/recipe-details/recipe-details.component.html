@@ -1,0 +1,39 @@
+<!-- Only render if steps exist -->
+<div *ngIf="steps.length > 0">
+   <div class="card mb-4">
+     <div class="card-body">
+        <h5 class="card-title">Nutritional Info</h5>
+        <ul class="list-unstyled">
+         <li>Calories: {{ getNutrientValue('Calories') }}</li>
+         <li>Protein: {{ getNutrientValue('Protein') }}</li>
+         <li>Fat: {{ getNutrientValue('Fat') }}</li>
+         <li>Carbs: {{ getNutrientValue('Carbohydrates') }}</li>
+         <li>Fiber: {{ getNutrientValue('Fiber') }}</li>
+       </ul>
+     </div>
+   </div>
+  <ul>
+    <li *ngFor="let step of steps">
+      {{ step.step }}
+
+      <!-- Equipment -->
+      <ng-container *ngIf="step.equipment?.length">
+        <p>Equipment:</p>
+        <ul>
+          <li *ngFor="let eq of step.equipment">{{ eq.name }}</li>
+        </ul>
+      </ng-container>
+
+      <!-- Ingredients -->
+      <ng-container *ngIf="step.ingredients?.length">
+        <p>Ingredients:</p>
+        <ul>
+          <li *ngFor="let ing of step.ingredients">{{ ing.name }}</li>
+        </ul>
+      </ng-container>
+    </li>
+    
+  </ul>
+ 
+</div>
+

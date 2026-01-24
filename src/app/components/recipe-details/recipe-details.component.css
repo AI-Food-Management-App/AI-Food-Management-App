@@ -1,0 +1,16 @@
+p{
+    font-weight: bolder;
+    font-size: 1.3rem;
+    font-style: italic;
+    color: #54c45f;
+}
+ul{
+    font-size: 1.1rem;
+}
+h5{
+    font-size: 1.5rem;
+    color: #4caf50;
+}
+.list-unstyled{
+    font-size: 1.13rem;
+}
