@@ -1,31 +1,33 @@
-<h1>Welcome to M.ai Food! Our AI Food Management Site</h1>
-<h2>Try our AI Ingredient Detection</h2>
-<div class="container mt-4">
-  <h3>Upload an Image for Food Recognition</h3>
-  <div class="mb-3">
-    <div class="upload-container">
-      <label for="fileInput" class="upload-label">Choose or Capture an Image: </label>
+<h2>Upload / Scan Food Label</h2>
 
-      <input type="file" id="fileInput" (change)="onFileSelected($event)" accept="image/*" capture="environment" />
+<input type="file" accept="image/*" capture="environment" (change)="onFile($event)" />
 
-      <button (click)="upload()" class="btn btn-success" [disabled]="!file">Upload image</button>
-    </div>
-  </div>
-
-  <div *ngIf="errorMessage" class="alert alert-danger mt-3">
-    {{ errorMessage }}
-  </div>
-
-  <div *ngIf="uploading" class="alert alert-info mt-3">
-    Processing your image... Please wait.
-  </div>
-
-  <div *ngIf="predictions?.length" class="results mt-3">
-    <h5>Detected Ingredients:</h5>
-    <ul>
-      <li *ngFor="let p of predictions">
-        {{ p.label }} — {{ (p.confidence * 100) | number: '1.0-1' }}%
-      </li>
-    </ul>
-  </div>
+<div *ngIf="previewUrl">
+  <p>Preview:</p>
+  <img [src]="previewUrl" alt="preview" width="250" />
 </div>
+
+<button (click)="detectAndSave()" [disabled]="!selectedFile || loading">
+  {{ loading ? "Processing..." : "Detect & Save" }}
+</button>
+
+<div *ngIf="detectedIngredient">
+  <p><strong>Detected:</strong> {{ detectedIngredient }}</p>
+</div>
+
+<div *ngIf="error">
+  <p><strong>Error:</strong> {{ error }}</p>
+</div>
+
+<hr />
+
+<h3>My Fridge Ingredients (from DB)</h3>
+<button (click)="loadFridge()" [disabled]="loadingFridge">
+  {{ loadingFridge ? "Loading..." : "Refresh Fridge" }}
+</button>
+
+<ul>
+  <li *ngFor="let item of fridgeItems">
+    {{ item.name }}
+  </li>
+</ul>

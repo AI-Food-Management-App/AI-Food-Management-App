@@ -1,23 +1,42 @@
-import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { FavoritesService, FavoriteRow } from '../../services/favorites.service';
+import { Component } from "@angular/core";
+import { CommonModule } from "@angular/common";
+import { RouterModule } from "@angular/router";
+import { FavoriteRecipesService, FavoriteRecipeRow } from "../../services/favorite-recipes.service";
+import { firstValueFrom } from "rxjs";
 
 @Component({
-  selector: 'app-favourites',
+  selector: "app-favourites",
   standalone: true,
-  imports: [CommonModule],
-  templateUrl: './favourites.component.html',
-  styleUrl: './favourites.component.css'
+  imports: [CommonModule, RouterModule],
+  templateUrl: "./favourites.component.html"
 })
-export class FavouritesComponent implements OnInit {
-  favourites: FavoriteRow[] = [];
+export class FavouritesComponent {
+  userID = 1;
+  loading = false;
+  error: string | null = null;
+  favorites: FavoriteRecipeRow[] = [];
 
-  constructor(private favoritesService: FavoritesService) {}
+  constructor(private favs: FavoriteRecipesService) {}
 
-  ngOnInit(): void {
-    this.favoritesService.getFavorites().subscribe({
-      next: (data) => this.favourites = data,
-      error: (err) => console.error('Error fetching favorites:', err)
-    });
+  async ngOnInit() {
+    await this.load();
+  }
+
+  async load() {
+    this.loading = true;
+    try {
+      this.favorites = await firstValueFrom(
+        this.favs.getFavorites(this.userID)
+      );
+    } catch (e: any) {
+      this.error = e?.message || "Failed to load favorites";
+    } finally {
+      this.loading = false;
+    }
+  }
+
+  async remove(recipeId: number) {
+    await firstValueFrom(this.favs.removeFavorite(this.userID, recipeId));
+    await this.load();
   }
 }

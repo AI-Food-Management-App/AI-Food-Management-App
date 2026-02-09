@@ -1,54 +1,69 @@
-import { Component, EventEmitter, Output } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { MlService } from '../../services/ml.service';
+import { Component } from "@angular/core";
+import { CommonModule } from "@angular/common";
+import { MlService } from "../../services/ml.service";
+import { FridgeService, FridgeItem } from "../../services/fridge.service";
+import { firstValueFrom } from "rxjs";
 
 @Component({
-  selector: 'app-upload',
+  selector: "app-upload",
   standalone: true,
   imports: [CommonModule],
-  templateUrl: './upload.component.html',
-  styleUrls: ['./upload.component.css']
+  templateUrl: "./upload.component.html"
 })
 export class UploadComponent {
-  file?: File;
-  uploading = false;
-  errorMessage = '';
+  userID = 1;
 
-  @Output() ingredientsDetected = new EventEmitter<string[]>();
+  selectedFile: File | null = null;
+  previewUrl: string | null = null;
 
-  constructor(private mlService: MlService) {}
+  loading = false;
+  error: string | null = null;
+  detectedIngredient: string | null = null;
 
-  onFileSelected(event: any) {
-    const f = event.target.files?.[0];
-    if (f) {
-      if (f.size > 10 * 1024 * 1024) {
-        this.errorMessage = 'File too large! Maximum size is 10MB.';
-        return;
-      }
-      this.file = f;
-      this.errorMessage = '';
+  fridgeItems: FridgeItem[] = [];
+  loadingFridge = false;
+
+  constructor(private ml: MlService, private fridge: FridgeService) {}
+
+  onFile(event: Event) {
+    this.error = null;
+    this.detectedIngredient = null;
+
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+
+    this.selectedFile = file;
+    this.previewUrl = URL.createObjectURL(file);
+  }
+
+  async detectAndSave() {
+    if (!this.selectedFile) return;
+
+    this.loading = true;
+    this.error = null;
+
+    try {
+      const resp = await firstValueFrom(
+        this.ml.detectAndSave(this.selectedFile, this.userID)
+      );
+      this.detectedIngredient = resp.ingredient;
+      await this.loadFridge();
+    } catch (e: any) {
+      this.error = e?.message || "Detection failed";
+    } finally {
+      this.loading = false;
     }
   }
 
-  upload() {
-    if (!this.file) return;
-
-    this.uploading = true;
-    this.errorMessage = '';
-
-    this.mlService.detectFood(this.file).subscribe({
-      next: (data) => {
-        this.uploading = false;
-
-        const ingredient = data.ingredient;
-        if (ingredient) this.ingredientsDetected.emit([ingredient]);
-        else this.errorMessage = 'No ingredient found.';
-      },
-      error: (err) => {
-        this.uploading = false;
-        this.errorMessage = 'Image processing failed.';
-        console.error('Upload error:', err);
-      }
-    });
+  async loadFridge() {
+    this.loadingFridge = true;
+    try {
+      this.fridgeItems = await firstValueFrom(
+        this.fridge.getItems(this.userID)
+      );
+    } finally {
+      this.loadingFridge = false;
+    }
   }
 }

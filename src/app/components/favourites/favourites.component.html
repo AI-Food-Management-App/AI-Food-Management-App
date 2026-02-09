@@ -1,15 +1,17 @@
-<div class="container mt-4">
-  <h2>Your Favourite Recipes</h2>
-  <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
-    <div class="col" *ngFor="let recipe of favourites">
-      <div class="card h-100 shadow-sm">
-        <img [src]="recipe.image" class="card-img-top" alt="{{ recipe.title }}">
-        <div class="card-body text-center">
-          <h5 class="card-title">{{ recipe.title }}</h5>
-          <p class="card-text">Servings: {{ recipe.servings }}</p>
-          <p class="card-text">Ready in {{ recipe.readyInMinutes }} min</p>
-        </div>
-      </div>
-    </div>
-  </div>
+<h2>Favorite Recipes</h2>
+
+<button (click)="load()" [disabled]="loading">
+  {{ loading ? "Loading..." : "Refresh" }}
+</button>
+
+<div *ngIf="error">
+  <p><strong>Error:</strong> {{ error }}</p>
 </div>
+
+<ul>
+  <li *ngFor="let fav of favorites">
+    <a [routerLink]="['/recipe', fav.recipeId]">{{ fav.title }}</a>
+    <img *ngIf="fav.image" [src]="fav.image" alt="fav image" width="150" />
+    <button (click)="remove(fav.recipeId)">Remove</button>
+  </li>
+</ul>
