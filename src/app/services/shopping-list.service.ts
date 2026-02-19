@@ -11,6 +11,13 @@ export type ShoppingItem = {
   checked: boolean;
 };
 
+export type ShoppingList = {
+  listID: number;     // or id if your table uses id
+  createdAt?: string; // optional
+};
+
+
+
 @Injectable({ providedIn: "root" })
 export class ShoppingListService {
   constructor(
@@ -25,6 +32,11 @@ export class ShoppingListService {
   getList(listID: number): Observable<ShoppingItem[]> {
     return this.http.get<ShoppingItem[]>(`${this.apiBaseUrl}/shopping-lists/${listID}`);
   }
+  
+  getLists(): Observable<ShoppingList[]> {
+  return this.http.get<ShoppingList[]>(`${this.apiBaseUrl}/shopping-lists`);
+}
+
 
   addItem(listID: number, name: string, quantity?: number | null) {
     return this.http.post(`${this.apiBaseUrl}/shopping-lists/${listID}/items`, {

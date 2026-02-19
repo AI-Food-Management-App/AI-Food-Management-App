@@ -1,22 +1,36 @@
-<h2>Shopping List</h2>
+<h2>Shopping Lists (Test)</h2>
 
 <button (click)="create()" [disabled]="creating">
   {{ creating ? "Creating..." : "Create New List" }}
 </button>
 
-<p *ngIf="listID"><strong>List ID:</strong> {{ listID }}</p>
+<button (click)="loadLists()" [disabled]="loadingLists">
+  {{ loadingLists ? "Loading..." : "Refresh Lists" }}
+</button>
+
+<ul>
+  <li *ngFor="let l of lists">
+    <button (click)="selectList(l.listID)">
+      Open List {{ l.listID }}
+    </button>
+  </li>
+</ul>
+
+<hr />
 
 <div *ngIf="listID">
-  <h3>Add item</h3>
+  <h3>Selected List: {{ listID }}</h3>
+
+  <h4>Add item</h4>
   <input placeholder="name" [(ngModel)]="newName" />
   <input placeholder="quantity" type="number" [(ngModel)]="newQty" />
   <button (click)="add()" [disabled]="adding || !newName">
     {{ adding ? "Adding..." : "Add" }}
   </button>
 
-  <h3>Items</h3>
+  <h4>Items</h4>
   <button (click)="load()" [disabled]="loading">
-    {{ loading ? "Loading..." : "Refresh List" }}
+    {{ loading ? "Loading..." : "Refresh Items" }}
   </button>
 
   <ul>
