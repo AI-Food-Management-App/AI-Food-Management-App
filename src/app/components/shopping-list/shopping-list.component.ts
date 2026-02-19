@@ -26,13 +26,20 @@ export class ShoppingListComponent {
 
   constructor(private shopping: ShoppingListService) {}
 
-  async create() {
-    this.creating = true;
-    const resp = await firstValueFrom(this.shopping.createList(this.userID));
+async create() {
+  this.creating = true;
+  this.error = null;
+  try {
+    const resp = await firstValueFrom(this.shopping.createList());
     this.listID = resp.listID;
     await this.load();
+  } catch (e: any) {
+    this.error = e?.message || "Failed to create list";
+  } finally {
     this.creating = false;
   }
+}
+
 
   async load() {
     if (!this.listID) return;
@@ -45,7 +52,7 @@ export class ShoppingListComponent {
     if (!this.listID) return;
     this.adding = true;
     await firstValueFrom(
-      this.shopping.addItem(this.listID, this.userID, this.newName, this.newQty)
+      this.shopping.addItem(this.listID, this.newName, this.newQty)
     );
     this.newName = "";
     this.newQty = null;

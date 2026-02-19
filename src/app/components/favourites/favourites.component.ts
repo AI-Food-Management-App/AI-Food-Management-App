@@ -40,3 +40,4 @@ export class FavouritesComponent {
     await this.load();
   }
 }
+
