@@ -1,24 +1,22 @@
-<app-upload (ingredientsDetected)="onIngredientsFromImage($event)"></app-upload>
-<app-search (searchEvent)="onSearch($event)"  [autoFillIngredients]="autoFillIngredients"></app-search>
-<div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
-  <div class="col" *ngFor="let recipe of recipes">
-    <div class="card h-100 shadow-sm">
-      <img [src]="recipe.image" class="card-img-top" alt="{{ recipe.title }}">
-      <div class="card-body text-center">
-        <h5 class="card-title">{{ recipe.title }}</h5>
-        <p class="card-text">Calories: {{ recipe.nutrition?.calories || 'N/A' }}</p>
-        <p class="card-text">Servings: {{ recipe.servings || 'N/A' }}</p>
-        <p class="card-text">Ready in: {{ recipe.readyInMinutes || 'N/A' }} minutes</p>
-        <a [routerLink]="['/recipe', recipe.id]" class="btn btn-success mt-2">See More</a>
-        <button class="btn btn-outline-danger" (click)="addToFavourites(recipe)">
-          ❤️ Favorite
-       </button>
+<h2>Recipes</h2>
 
-        <button class="btn btn-outline-danger" (click)="removeFromFavourites(recipe)">
-         ❌ Remove
-       </button>
-      </div>
-    </div>
-  </div>
+<button (click)="loadFromFridge()" [disabled]="loading">
+  {{ loading ? "Loading..." : "Load recipes from my fridge" }}
+</button>
+
+<div *ngIf="ingredientsUsed.length">
+  <p><strong>Using ingredients:</strong> {{ ingredientsUsed.join(", ") }}</p>
 </div>
 
+<div *ngIf="error">
+  <p><strong>Error:</strong> {{ error }}</p>
+</div>
+
+<ul>
+  <li *ngFor="let recipe of recipes">
+    <a [routerLink]="['/recipe', recipe.id]">{{ recipe.title }}</a>
+    <div *ngIf="recipe.image">
+      <img [src]="recipe.image" alt="recipe image" width="200" />
+    </div>
+  </li>
+</ul>

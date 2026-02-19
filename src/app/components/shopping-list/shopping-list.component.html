@@ -1,75 +1,33 @@
-<div class="container py-4">
-  <div class="row justify-content-center">
-    <div class="col-12 col-md-8 col-lg-6">
+<h2>Shopping List</h2>
 
-      <div class="paper card shadow-sm border-0">
-        <div class="card-body">
-          <div class="d-flex align-items-center justify-content-between mb-3">
-            <h2 class="h4 m-0 paper-title">Shopping List</h2>
-            <span class="badge bg-dark-subtle text-dark">List #{{ listID ?? "—" }}</span>
-          </div>
+<button (click)="create()" [disabled]="creating">
+  {{ creating ? "Creating..." : "Create New List" }}
+</button>
 
-          <div *ngIf="error" class="alert alert-danger py-2">{{ error }}</div>
+<p *ngIf="listID"><strong>List ID:</strong> {{ listID }}</p>
 
-          <div *ngIf="loading" class="text-muted">Loading...</div>
+<div *ngIf="listID">
+  <h3>Add item</h3>
+  <input placeholder="name" [(ngModel)]="newName" />
+  <input placeholder="quantity" type="number" [(ngModel)]="newQty" />
+  <button (click)="add()" [disabled]="adding || !newName">
+    {{ adding ? "Adding..." : "Add" }}
+  </button>
 
-          <ul class="list-unstyled mb-3" *ngIf="!loading">
-            <li *ngFor="let item of items" class="paper-line d-flex align-items-center gap-2">
-              <input
-                class="form-check-input big-check"
-                type="checkbox"
-                [checked]="item.checked"
-                (change)="toggle(item)"
-              />
+  <h3>Items</h3>
+  <button (click)="load()" [disabled]="loading">
+    {{ loading ? "Loading..." : "Refresh List" }}
+  </button>
 
-              <div class="flex-grow-1">
-                <div class="item-text" [class.checked]="item.checked">
-                  {{ item.name }}
-                  <span *ngIf="item.quantity !== null" class="text-muted">— {{ item.quantity }}</span>
-                </div>
-              </div>
+  <ul>
+    <li *ngFor="let item of items">
+      <input type="checkbox" [checked]="item.checked" (change)="toggle(item, $event)" />
+      {{ item.name }} ({{ item.quantity ?? "n/a" }})
+      <button (click)="del(item)">Delete</button>
+    </li>
+  </ul>
+</div>
 
-              <button class="btn btn-sm btn-outline-danger" (click)="remove(item)">×</button>
-            </li>
-          </ul>
-
-          <!-- Add section -->
-          <div class="add-area pt-2">
-            <div class="row g-2 align-items-end">
-              <div class="col-8">
-                <label class="form-label small text-muted">Add ingredient</label>
-                <input
-                  class="form-control"
-                  placeholder="e.g. Tomatoes"
-                  [(ngModel)]="newName"
-                  (keyup.enter)="add()"
-                />
-              </div>
-
-              <div class="col-4">
-                <label class="form-label small text-muted">Qty</label>
-                <input
-                  class="form-control"
-                  type="number"
-                  placeholder="1"
-                  [(ngModel)]="newQuantity"
-                />
-              </div>
-
-              <div class="col-12 d-grid mt-2">
-                <button class="btn btn-warning fw-semibold" (click)="add()">
-                  Add to list
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <p class="small text-muted mt-3 mb-0">
-            Tip: items are linked to Ingredients in your database. New names create Ingredients automatically.
-          </p>
-        </div>
-      </div>
-
-    </div>
-  </div>
+<div *ngIf="error">
+  <p><strong>Error:</strong> {{ error }}</p>
 </div>

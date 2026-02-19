@@ -1,65 +1,75 @@
-import { Component, Input, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { ActivatedRoute } from '@angular/router';
-import { FoodApiService } from '../../services/food-api.service';
-import { Recipe } from '../../interfaces/food-api-response';
+import { Component } from "@angular/core";
+import { CommonModule } from "@angular/common";
+import { RouterModule, ActivatedRoute } from "@angular/router";
+import { FoodApiService } from "../../services/api.service";
+import { FavoriteRecipesService } from "../../services/favorite-recipes.service";
+import { Recipe } from "../../interfaces/food-api-response";
+import { firstValueFrom } from "rxjs";
 
 @Component({
-    selector: 'app-recipe-details',
-    standalone: true,
-    imports: [CommonModule],
-    templateUrl: './recipe-details.component.html',
-    styleUrls: ['./recipe-details.component.css']
+  selector: "app-recipe-details",
+  standalone: true,
+  imports: [CommonModule, RouterModule],
+  templateUrl: "./recipe-details.component.html"
 })
-export class RecipeDetailsComponent implements OnInit {
-    recipe: Recipe | null = null; // Ensure the recipe can be null initially
-    isLoading: boolean = true; // Add a loading indicator
-    hasError: boolean = false; // Add an error flag for better UX
+export class RecipeDetailsComponent {
+  userID = 1;
 
-    constructor(
-        private route: ActivatedRoute,
-        private foodApiService: FoodApiService,
-    ) {}
+  loading = false;
+  favLoading = false;
+  error: string | null = null;
 
-    ngOnInit(): void {
-        // Get the recipe ID from the route parameters
-        const recipeId = Number(this.route.snapshot.paramMap.get('id'));
+  recipe: Recipe | null = null;
+  steps: { number: number; step: string }[] = [];
 
-        // Fetch recipe details using the food API service
-        this.foodApiService.getRecipeById(recipeId).subscribe({
-            next: (data) => {
-                console.log('Fetched recipe data:', data);
-                this.recipe = this.processRecipeData(data);
-                this.isLoading = false; 
-            },
-            error: (error) => {
-                console.error('Error fetching recipe details:', error);
-                this.hasError = true; 
-                this.isLoading = false; 
-            }
-        });
+  constructor(
+    private route: ActivatedRoute,
+    private foodApi: FoodApiService,
+    private favs: FavoriteRecipesService
+  ) {}
+
+  async ngOnInit() {
+    const id = Number(this.route.snapshot.paramMap.get("id"));
+    if (!id) return;
+
+    this.loading = true;
+
+    try {
+      this.recipe = await firstValueFrom(
+        this.foodApi.getRecipeById(id)
+      );
+      this.steps =
+        this.recipe.analyzedInstructions?.[0]?.steps?.map(s => ({
+          number: s.number,
+          step: s.step
+        })) ?? [];
+    } catch (e: any) {
+      this.error = e?.message || "Failed to load recipe";
+    } finally {
+      this.loading = false;
     }
+  }
 
-    getNutrientValue(nutrientName: string): string {
-      const nutrient = this.recipe?.nutrition?.nutrients?.find(n => n.name === nutrientName);
-      return nutrient ? `${nutrient.amount} ${nutrient.unit}` : 'N/A';
-   }
+  async favorite() {
+    if (!this.recipe) return;
+    this.favLoading = true;
+    await firstValueFrom(
+      this.favs.addFavorite(
+        this.userID,
+        this.recipe.id,
+        this.recipe.title,
+        this.recipe.image
+      )
+    );
+    this.favLoading = false;
+  }
 
-    private processRecipeData(data: Recipe): Recipe {
-        return {
-            ...data,
-            analyzedInstructions: data.analyzedInstructions?.map((instruction) => ({
-                ...instruction,
-                steps: instruction.steps?.map((step) => ({
-                    ...step,
-                    equipment: step.equipment || [], 
-                    ingredients: step.ingredients || [] 
-                })) || [] 
-            })) || [] 
-        };
-    }
-    get steps() {
-  return this.recipe?.analyzedInstructions?.[0]?.steps ?? [];
-}
-
+  async unfavorite() {
+    if (!this.recipe) return;
+    this.favLoading = true;
+    await firstValueFrom(
+      this.favs.removeFavorite(this.userID, this.recipe.id)
+    );
+    this.favLoading = false;
+  }
 }

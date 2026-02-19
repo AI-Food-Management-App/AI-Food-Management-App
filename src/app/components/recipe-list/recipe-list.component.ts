@@ -1,55 +1,45 @@
-import { Component, Input } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
-import { SearchComponent } from '../search/search.component';
-import { UploadComponent } from '../upload/upload.component';
-import { Recipe } from '../../interfaces/food-api-response';
-import { FavoritesService } from '../../services/favorites.service';
+import { Component } from "@angular/core";
+import { CommonModule } from "@angular/common";
+import { RouterModule } from "@angular/router";
+import { FoodApiService } from "../../services/api.service";
+import { FridgeService } from "../../services/fridge.service";
+import { Recipe } from "../../interfaces/food-api-response";
+import { firstValueFrom } from "rxjs";
 
 @Component({
-  selector: 'app-recipe-list',
+  selector: "app-recipe-list",
   standalone: true,
-  imports: [CommonModule, RouterModule, SearchComponent, UploadComponent],
-  templateUrl: './recipe-list.component.html',
-  styleUrl: './recipe-list.component.css'
+  imports: [CommonModule, RouterModule],
+  templateUrl: "./recipe-list.component.html"
 })
 export class RecipeListComponent {
-  @Input() recipes: Recipe[] = [];
-  @Input() errorMessage: string = '';
-  autoFillIngredients: string[] = [];
+  userID = 1;
+  loading = false;
+  error: string | null = null;
 
-  constructor(private favoritesService: FavoritesService) {}
+  ingredientsUsed: string[] = [];
+  recipes: Recipe[] = [];
 
-  onRecipeSelected(recipe: Recipe): void {
-    console.log('Selected recipe:', recipe);
-  }
+  constructor(
+    private foodApi: FoodApiService,
+    private fridge: FridgeService
+  ) {}
 
-  onSearch(recipes: Recipe[]): void {
-    this.recipes = recipes;
-  }
+  async loadFromFridge() {
+    this.loading = true;
+    this.error = null;
 
-  onIngredientsFromImage(ingredients: string[]) {
-    this.autoFillIngredients = ingredients;
-  }
-
-  addToFavourites(recipe: any): void {
-    // Map spoonacular recipe -> your DB schema
-    const payload = {
-      id: recipe.id,
-      name: recipe.title ?? recipe.name ?? "Unknown",
-      image: recipe.image ?? ""
-    };
-
-    this.favoritesService.addFavorite(payload).subscribe({
-      next: () => alert('Recipe added to favorites!'),
-      error: (err) => console.error('Failed to save favorite:', err)
-    });
-  }
-
-  removeFromFavourites(recipe: any): void {
-    this.favoritesService.removeFavorite(recipe.id).subscribe({
-      next: () => alert('Recipe removed from favorites!'),
-      error: (err) => console.error('Failed to remove favorite:', err)
-    });
+    try {
+      const items = await firstValueFrom(this.fridge.getItems(this.userID));
+      this.ingredientsUsed = items.map(i => i.name);
+      const resp = await firstValueFrom(
+        this.foodApi.getRecipes(this.ingredientsUsed)
+      );
+      this.recipes = resp.results ?? [];
+    } catch (e: any) {
+      this.error = e?.message || "Failed to load recipes";
+    } finally {
+      this.loading = false;
+    }
   }
 }

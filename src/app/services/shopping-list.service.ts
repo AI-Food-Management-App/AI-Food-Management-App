@@ -18,17 +18,17 @@ export class ShoppingListService {
     @Inject(API_BASE_URL) private apiBaseUrl: string
   ) {}
 
-  createList(userID: number): Observable<{ listID: number }> {
-    return this.http.post<{ listID: number }>(`${this.apiBaseUrl}/shopping-lists`, { userID });
+  createList(): Observable<{ listID: number }> {
+    return this.http.post<{ listID: number }>(`${this.apiBaseUrl}/shopping-lists`, {  });
   }
 
   getList(listID: number): Observable<ShoppingItem[]> {
     return this.http.get<ShoppingItem[]>(`${this.apiBaseUrl}/shopping-lists/${listID}`);
   }
 
-  addItem(listID: number, userID: number, name: string, quantity?: number | null) {
+  addItem(listID: number, name: string, quantity?: number | null) {
     return this.http.post(`${this.apiBaseUrl}/shopping-lists/${listID}/items`, {
-      userID,
+      
       name,
       quantity: quantity ?? null
     });

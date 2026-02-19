@@ -11,10 +11,3 @@ export const API_BASE_URL = new InjectionToken<string>("API_BASE_URL", {
   factory: () => environment.apiBaseUrl
 });
 
-export const SPOONACULAR_CONFIG = new InjectionToken<SpoonacularConfig>(
-  "SPOONACULAR_CONFIG",
-  {
-    providedIn: "root",
-    factory: () => environment.spoonacular
-  }
-);

@@ -1,21 +1,15 @@
-<h1>Search for a recipe!</h1>
+<h2>Search Recipes (manual)</h2>
 
-<form class="row g-2 justify-content-center mb-4" (submit)="searchRecipes(); $event.preventDefault()">
-  <div class="col-auto">
-    <input type="text" class="form-control" [(ngModel)]="ingredients" name="ingredients"
-           placeholder="Enter ingredients (comma-separated)">
-  </div>
-  <div class="col-auto">
-    <select class="form-select" [(ngModel)]="diet" name="diet">
-      <option value="">No Filter</option>
-      <option value="gluten free">Gluten-Free</option>
-      <option value="vegan">Vegan</option>
-      <option value="vegetarian">Vegetarian</option>
-    </select>
-  </div>
-  <div class="col-auto">
-    <button class="btn btn-success" type="submit"(click)="searchRecipes()">Search</button>
+<p>Enter ingredients separated by commas:</p>
+<input [(ngModel)]="query" placeholder="e.g. tomato, cheese" />
+<button (click)="search()" [disabled]="loading">Search</button>
 
-  </div>
-</form>
+<div *ngIf="error">
+  <p><strong>Error:</strong> {{ error }}</p>
+</div>
 
+<ul>
+  <li *ngFor="let recipe of recipes">
+    <a [routerLink]="['/recipe', recipe.id]">{{ recipe.title }}</a>
+  </li>
+</ul>
