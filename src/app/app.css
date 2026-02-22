@@ -1,0 +1,28 @@
+.img-nav{
+    width: 120px;
+    height: 60px;
+    border-radius: 50%;
+    margin-right: 10px;
+}
+.img{
+    width: 80px;
+    height: 60px;
+    margin-right: 10px;
+}
+
+.nav-link {
+    text-decoration: none;
+    color: #b1e7af;
+    font-weight: bold;
+    margin-right: 30px;
+}
+.nav-item {
+    display: inline-block;
+    margin-right: 60px;
+    padding-right: 50px;
+    transition: color 0.3s ease;
+}
+.nav-item:hover .nav-link {
+    color: rgb(196, 196, 196);
+    box-shadow: 0 2px 4px rgba(182, 233, 180, 0.5);
+}
