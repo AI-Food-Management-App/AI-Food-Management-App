@@ -1,33 +1,41 @@
-<h2>Upload / Scan Food Label</h2>
+<div class="card text-center mb-3">
+  <div class="card-body">
+    <h2 class="card-title">Upload / Scan Food Label</h2>
 
-<input type="file" accept="image/*" capture="environment" (change)="onFile($event)" />
+    <input type="file" accept="image/*" capture="environment" (change)="onFile($event)" />
 
-<div *ngIf="previewUrl">
-  <p>Preview:</p>
-  <img [src]="previewUrl" alt="preview" width="250" />
+    <div *ngIf="previewUrl">
+      <p>Preview:</p>
+      <img [src]="previewUrl" alt="preview" width="250" />
+    </div>
+
+     <button (click)="detectAndSave()" [disabled]="!selectedFile || loading" >
+       {{ loading ? "Processing..." : "Detect & Save" }}
+     </button>
+
+     <div *ngIf="detectedIngredient">
+       <p><strong>Detected:</strong> {{ detectedIngredient }}</p>
+     </div>
+
+      <div *ngIf="error">
+       <p><strong>Error:</strong> {{ error }}</p>
+     </div>
+ </div>
 </div>
+ 
+<div class="card text-center mb-3">
+  <div class="card-body">
+    <h2 class="card-title">My Fridge Ingredients (from DB)</h2>
+    <button (click)="loadFridge()" [disabled]="loadingFridge" >
+      {{ loadingFridge ? "Loading..." : "Refresh Fridge" }}
+    </button>
 
-<button (click)="detectAndSave()" [disabled]="!selectedFile || loading">
-  {{ loading ? "Processing..." : "Detect & Save" }}
-</button>
+    <ul>
+      <li *ngFor="let item of fridgeItems">
+        {{ item.name }}
+      </li>
+    </ul>
+  </div>
 
-<div *ngIf="detectedIngredient">
-  <p><strong>Detected:</strong> {{ detectedIngredient }}</p>
 </div>
-
-<div *ngIf="error">
-  <p><strong>Error:</strong> {{ error }}</p>
-</div>
-
-<hr />
-
-<h3>My Fridge Ingredients (from DB)</h3>
-<button (click)="loadFridge()" [disabled]="loadingFridge">
-  {{ loadingFridge ? "Loading..." : "Refresh Fridge" }}
-</button>
-
-<ul>
-  <li *ngFor="let item of fridgeItems">
-    {{ item.name }}
-  </li>
-</ul>
+ 
