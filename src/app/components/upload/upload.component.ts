@@ -3,18 +3,23 @@ import { CommonModule } from "@angular/common";
 import { MlService } from "../../services/ml.service";
 import { FridgeService, FridgeItem } from "../../services/fridge.service";
 import { firstValueFrom } from "rxjs";
+import { OnInit } from "@angular/core";
+import { FormsModule } from "@angular/forms";
 
 @Component({
   selector: "app-upload",
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: "./upload.component.html"
 })
-export class UploadComponent {
+export class UploadComponent implements OnInit {
   userID = 1;
 
   selectedFile: File | null = null;
   previewUrl: string | null = null;
+
+  search = "";
+  selectedCategory: string | null = null;
 
   loading = false;
   error: string | null = null;
@@ -60,10 +65,14 @@ export class UploadComponent {
     this.loadingFridge = true;
     try {
       this.fridgeItems = await firstValueFrom(
-        this.fridge.getItems(this.userID)
+        this.fridge.getItems(this.selectedCategory ?? undefined, this.search || undefined)
       );
     } finally {
       this.loadingFridge = false;
     }
+  }
+
+  ngOnInit(){
+    this.loadFridge();
   }
 }

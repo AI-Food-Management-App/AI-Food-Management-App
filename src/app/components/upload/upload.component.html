@@ -25,14 +25,36 @@
  
 <div class="card text-center mb-3">
   <div class="card-body">
-    <h2 class="card-title">My Fridge Ingredients (from DB)</h2>
-    <button (click)="loadFridge()" [disabled]="loadingFridge" >
-      {{ loadingFridge ? "Loading..." : "Refresh Fridge" }}
-    </button>
+    <hr />
+
+    <h3>My Fridge Ingredients</h3>
+
+    <div class="mb-2">
+      <input
+        type="text"
+        placeholder="Search ingredient..."
+        [(ngModel)]="search"
+        (input)="loadFridge()"
+      />
+    </div>
+
+    <div class="mb-2">
+      <select [(ngModel)]="selectedCategory" (change)="loadFridge()">
+        <option [ngValue]="null">All categories</option>
+        <option>Fruits</option>
+        <option>Vegetables</option>
+        <option>Meat</option>
+        <option>Poultry</option>
+        <option>Seafood</option>
+        <option>Dairy</option>
+        <option>Grains</option>
+        <option>Other / Uncategorized</option>
+      </select>
+    </div>
 
     <ul>
       <li *ngFor="let item of fridgeItems">
-        {{ item.name }}
+        {{ item.name }} ({{ item.quantity }} - {{ item.category }})
       </li>
     </ul>
   </div>

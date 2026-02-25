@@ -2,7 +2,6 @@ import { Component } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { FormsModule } from "@angular/forms";
 import { RouterModule } from "@angular/router";
-import { FoodApiService } from "../../services/api.service";
 import { firstValueFrom } from "rxjs";
 
 @Component({
@@ -16,11 +15,4 @@ export class SearchComponent {
   loading = false;
   error: string | null = null;
 
-  constructor(private foodApi: FoodApiService) {}
-
-  async search() {
-    this.loading = true;
-    this.error = null;
-
-  }
 }

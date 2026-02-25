@@ -1,13 +1,1 @@
-<h2>Search Recipes (manual)</h2>
 
-<p>Enter ingredients separated by commas:</p>
-<input [(ngModel)]="query" placeholder="e.g. tomato, cheese" />
-<button (click)="search()" [disabled]="loading">Search</button>
-
-<div *ngIf="error">
-  <p><strong>Error:</strong> {{ error }}</p>
-</div>
-
-<ul>
-  
-</ul>
