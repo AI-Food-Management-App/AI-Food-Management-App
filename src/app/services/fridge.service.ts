@@ -9,6 +9,7 @@ export type FridgeItem = {
   quantity: number;
   category: string;
   tags: string[];
+  CatalogueID: number;
 };
 
 
@@ -19,14 +20,13 @@ export class FridgeService {
 
   getItems(category?: string, search?: string): Observable<FridgeItem[]> {
   let params = new HttpParams();
-
   if (category) params = params.set("category", category);
   if (search) params = params.set("search", search);
 
   return this.http.get<FridgeItem[]>(`${this.apiBaseUrl}/fridge/items`, { params });
 }
 
-  addItem(userID: number, name: string): Observable<any> {
-    return this.http.post(`${this.apiBaseUrl}/fridge/items`, { userID, name });
-  }
+addItem(name: string, quantity = 1) {
+  return this.http.post(`${this.apiBaseUrl}/fridge/items`, { name, quantity });
+}
 }
