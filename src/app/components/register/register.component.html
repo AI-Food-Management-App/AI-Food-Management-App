@@ -5,56 +5,74 @@
       <h2 class="fw-bold mb-1">Create an account</h2>
       <p class="text-muted mb-4">Join M.ai Food to get started</p>
 
-      <div *ngIf="errorMsg"   class="alert alert-danger">{{ errorMsg }}</div>
-      <div *ngIf="successMsg" class="alert alert-success">{{ successMsg }}</div>
+      <div *ngIf="errorMsg"   class="alert alert-danger  py-2">{{ errorMsg }}</div>
+      <div *ngIf="successMsg" class="alert alert-success py-2">{{ successMsg }}</div>
 
       <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
 
-        <!-- Name -->
         <div class="mb-3">
           <label class="form-label fw-semibold">Full Name</label>
-          <input formControlName="name" type="text" class="form-control"
+          <input
+            formControlName="name"
+            type="text"
+            class="form-control"
             [class.is-invalid]="f['name'].invalid && f['name'].touched"
-            placeholder="Jane Smith" />
+            placeholder="Jane Smith"
+          />
           <div class="invalid-feedback">{{ getError('name') }}</div>
         </div>
 
-        <!-- Date of Birth -->
         <div class="mb-3">
           <label class="form-label fw-semibold">Date of Birth</label>
-          <input formControlName="dob" type="date" class="form-control"
-            [class.is-invalid]="f['dob'].invalid && f['dob'].touched" />
+          <input
+            formControlName="dob"
+            type="date"
+            class="form-control"
+            [class.is-invalid]="f['dob'].invalid && f['dob'].touched"
+          />
           <div class="invalid-feedback">{{ getError('dob') }}</div>
         </div>
 
-        <!-- Email -->
         <div class="mb-3">
           <label class="form-label fw-semibold">Email Address</label>
-          <input formControlName="email" type="email" class="form-control"
+          <input
+            formControlName="email"
+            type="email"
+            class="form-control"
             [class.is-invalid]="f['email'].invalid && f['email'].touched"
-            placeholder="you@example.com" />
+            placeholder="you@example.com"
+          />
           <div class="invalid-feedback">{{ getError('email') }}</div>
         </div>
 
-        <!-- Password -->
         <div class="mb-3">
           <label class="form-label fw-semibold">Password</label>
-          <input formControlName="password" type="password" class="form-control"
+          <input
+            formControlName="password"
+            type="password"
+            class="form-control"
             [class.is-invalid]="f['password'].invalid && f['password'].touched"
-            placeholder="At least 8 characters" />
+            placeholder="At least 8 characters"
+          />
           <div class="invalid-feedback">{{ getError('password') }}</div>
         </div>
 
-        <!-- Confirm Password -->
         <div class="mb-4">
           <label class="form-label fw-semibold">Confirm Password</label>
-          <input formControlName="confirmPassword" type="password" class="form-control"
-            [class.is-invalid]="f['confirmPassword'].touched && !!form.errors?.['mismatch']" />
+          <input
+            formControlName="confirmPassword"
+            type="password"
+            class="form-control"
+            [class.is-invalid]="f['confirmPassword'].touched && !!form.errors?.['mismatch']"
+          />
           <div class="invalid-feedback">Passwords do not match.</div>
         </div>
 
-        <button type="submit" class="btn btn-primary w-100 rounded-pill py-2 fw-semibold"
-          [disabled]="loading">
+        <button
+          type="submit"
+          class="btn btn-primary w-100 rounded-pill py-2 fw-semibold"
+          [disabled]="loading"
+        >
           {{ loading ? 'Creating account...' : 'Create Account' }}
         </button>
 
@@ -63,6 +81,7 @@
       <p class="text-center text-muted mt-3 mb-0">
         Already have an account? <a routerLink="/login">Sign in</a>
       </p>
+
     </div>
   </div>
 </div>

@@ -17,12 +17,12 @@ import {
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, RouterModule],
   templateUrl: './register.component.html',
-  styleUrls: ['./register.component.css']
+  styleUrl: './register.component.css'
 })
 export class RegisterComponent {
   form: FormGroup;
-  loading  = false;
-  errorMsg = '';
+  loading    = false;
+  errorMsg   = '';
   successMsg = '';
 
   constructor(
@@ -31,50 +31,51 @@ export class RegisterComponent {
     private router: Router
   ) {
     this.form = this.fb.group({
-      name:            ['', [Validators.required, nameValidator()]],
-      dob:             ['', [Validators.required, minAgeValidator(16)]],
-      email:           ['', [Validators.required, emailValidator()]],
-      password:        ['', [Validators.required, passwordValidator()]],
+      name: ['', [Validators.required, nameValidator()]],
+      dob: ['', [Validators.required, minAgeValidator(16)]],
+      email: ['', [Validators.required, emailValidator()]],
+      password: ['', [Validators.required, passwordValidator()]],
       confirmPassword: ['',  Validators.required]
     }, { validators: passwordMatchValidator });
   }
 
   get f() { return this.form.controls; }
 
-  // Helper: get the first error message for a field
   getError(field: string): string {
     const ctrl = this.f[field];
     if (!ctrl.errors || !ctrl.touched) return '';
     const err = ctrl.errors;
-    if (err['required'])      return `${this.label(field)} is required`;
-    if (err['specialChars'])  return err['specialChars'];
-    if (err['underage'])      return err['underage'];
-    if (err['noAt'])          return err['noAt'];
-    if (err['invalidEmail'])  return err['invalidEmail'];
-    if (err['minlength'])     return err['minlength'];
+    if (err['required'])     return `${this.label(field)} is required`;
+    if (err['specialChars']) return err['specialChars'];
+    if (err['underage'])     return err['underage'];
+    if (err['noAt'])         return err['noAt'];
+    if (err['invalidEmail']) return err['invalidEmail'];
+    if (err['minlength'])    return err['minlength'];
     return 'Invalid value';
   }
 
   private label(field: string): string {
     const labels: Record<string, string> = {
       name: 'Name', dob: 'Date of birth',
-      email: 'Email', password: 'Password', confirmPassword: 'Confirm password'
+      email: 'Email', password: 'Password',
+      confirmPassword: 'Confirm password'
     };
     return labels[field] ?? field;
   }
 
   onSubmit() {
     if (this.form.invalid) { this.form.markAllAsTouched(); return; }
-    this.loading = true;
+    this.loading  = true;
     this.errorMsg = '';
+
     const { name, dob, email, password } = this.form.value;
+
     this.auth.register({ name, dob, email, password }).subscribe({
       next: () => {
         this.successMsg = 'Account created! Redirecting to login...';
         setTimeout(() => this.router.navigate(['/login']), 1500);
       },
-      error: (err: any) => {
-        // Backend returns { errors: { name, dob, email, password } }
+      error: err => {
         const serverErrors = err.error?.errors;
         this.errorMsg = serverErrors
           ? Object.values(serverErrors).join(' • ')

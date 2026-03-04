@@ -5,13 +5,12 @@ import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angula
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.services';
 import { emailValidator, passwordValidator } from '../validators/auth.validators';
-
 @Component({
   selector: 'app-login',
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, RouterModule],
   templateUrl: './login.component.html',
-  styleUrls: ['./login.component.css']
+  styleUrl: './login.component.css'
 })
 export class LoginComponent {
   form: FormGroup;
@@ -23,8 +22,6 @@ export class LoginComponent {
     private auth: AuthService,
     private router: Router
   ) {
-    if (this.auth.isLoggedIn()) this.router.navigate(['/']);
-
     this.form = this.fb.group({
       email:    ['', [Validators.required, emailValidator()]],
       password: ['',  Validators.required]
@@ -45,14 +42,16 @@ export class LoginComponent {
 
   onSubmit() {
     if (this.form.invalid) { this.form.markAllAsTouched(); return; }
-    this.loading = true;
+    this.loading  = true;
     this.errorMsg = '';
+
     const { email, password } = this.form.value;
+
     this.auth.login(email, password).subscribe({
       next: () => this.router.navigate(['/']),
-      error: (err: any) => {
+      error: err => {
         this.errorMsg = err.error?.error || 'Login failed. Please try again.';
-        this.loading = false;
+        this.loading  = false;
       }
     });
   }

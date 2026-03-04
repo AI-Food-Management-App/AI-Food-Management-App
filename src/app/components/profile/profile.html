@@ -1,1 +1,115 @@
-<p>profile works!</p>
+<div class="profile-page d-flex justify-content-center align-items-start py-5">
+
+  <!-- Loading -->
+  <div *ngIf="loading" class="text-center text-muted mt-5">Loading profile...</div>
+
+  <!-- Card -->
+  <div *ngIf="!loading" class="profile-card">
+
+    <div *ngIf="successMsg" class="alert alert-success py-2 mb-3">{{ successMsg }}</div>
+    <div *ngIf="errorMsg"   class="alert alert-danger  py-2 mb-3">{{ errorMsg }}</div>
+
+    <!-- Avatar + top row -->
+    <div class="profile-top">
+      <div class="avatar-box">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="1.5" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="12" cy="8"  r="4"/>
+          <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" stroke-linecap="round"/>
+        </svg>
+      </div>
+    </div>
+
+    <div class="profile-divider"></div>
+
+    <!-- View mode -->
+    <ng-container *ngIf="!editMode">
+      <div class="profile-grid">
+
+        <div class="profile-field">
+          <span class="field-label">Name:</span>
+          <span class="field-value">{{ profile?.name || '—' }}</span>
+        </div>
+
+        <div class="profile-field">
+          <span class="field-label">Date of Birth:</span>
+          <span class="field-value">{{ formatDate(profile?.dob ?? '') }}</span>
+        </div>
+
+        <div class="profile-field">
+          <span class="field-label">Account Made:</span>
+          <span class="field-value">{{ formatDate(profile?.created_at ?? '') }}</span>
+        </div>
+
+        <div class="profile-field">
+          <span class="field-label">Allergies:</span>
+          <span class="field-value">
+            <ng-container *ngIf="profile?.allergies?.length; else none">
+              <span *ngFor="let a of profile?.allergies" class="allergy-tag">{{ a }}</span>
+            </ng-container>
+            <ng-template #none>None</ng-template>
+          </span>
+        </div>
+
+      </div>
+
+      <div class="profile-divider"></div>
+
+      <div class="profile-actions">
+        <button class="btn-update" (click)="editMode = true">Update Profile</button>
+        <button class="btn-delete" (click)="onDelete()" [disabled]="deleting">
+          {{ deleting ? 'Deleting...' : 'Delete Profile' }}
+        </button>
+      </div>
+    </ng-container>
+
+    <!-- Edit mode -->
+    <ng-container *ngIf="editMode">
+      <form [formGroup]="form" (ngSubmit)="onSave()" novalidate class="edit-form">
+
+        <div class="mb-3">
+          <label class="field-label">Name</label>
+          <input formControlName="name" type="text" class="form-control"
+            [class.is-invalid]="form.get('name')?.invalid && form.get('name')?.touched" />
+          <div class="invalid-feedback">
+            {{ form.get('name')?.errors?.['specialChars'] || 'Name is required' }}
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label class="field-label">Date of Birth</label>
+          <input formControlName="dob" type="date" class="form-control"
+            [class.is-invalid]="form.get('dob')?.invalid && form.get('dob')?.touched" />
+          <div class="invalid-feedback">
+            {{ form.get('dob')?.errors?.['underage'] || 'Invalid date' }}
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label class="field-label">Allergies</label>
+          <div class="allergy-input-row">
+            <input [(ngModel)]="allergyInput" [ngModelOptions]="{standalone: true}"
+              type="text" class="form-control" placeholder="e.g. Peanuts"
+              (keydown.enter)="$event.preventDefault(); addAllergy()" />
+            <button type="button" class="btn-add-allergy" (click)="addAllergy()">Add</button>
+          </div>
+          <div class="allergy-tags mt-2">
+            <span *ngFor="let a of allergies" class="allergy-tag removable">
+              {{ a }}
+              <button type="button" (click)="removeAllergy(a)">×</button>
+            </span>
+          </div>
+        </div>
+
+        <div class="profile-actions mt-3">
+          <button type="button" class="btn-cancel" (click)="editMode = false">Cancel</button>
+          <button type="submit" class="btn-update" [disabled]="saving">
+            {{ saving ? 'Saving...' : 'Save Changes' }}
+          </button>
+        </div>
+
+      </form>
+    </ng-container>
+
+  </div>
+</div>
