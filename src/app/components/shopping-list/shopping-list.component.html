@@ -1,47 +1,155 @@
-<h2>Shopping Lists (Test)</h2>
+<div class="container my-4">
+  <div class="row g-4">
+    <!-- LEFT: Shopping List tester -->
+    <div class="col-12 col-lg-6">
+      <div class="card paper shadow-sm">
+        <div class="card-body">
+          <h2 class="paper-title mb-3">Shopping Lists (Test)</h2>
 
-<button (click)="create()" [disabled]="creating">
-  {{ creating ? "Creating..." : "Create New List" }}
-</button>
+          <div class="d-flex gap-2 flex-wrap mb-3">
+            <button class="btn btn-primary" (click)="create()" [disabled]="creating">
+              {{ creating ? "Creating..." : "Create New List" }}
+            </button>
 
-<button (click)="loadLists()" [disabled]="loadingLists">
-  {{ loadingLists ? "Loading..." : "Refresh Lists" }}
-</button>
+            <span class="text-muted" *ngIf="loadingLists">Loading lists...</span>
+          </div>
 
-<ul>
-  <li *ngFor="let l of lists">
-    <button (click)="selectList(l.listID)">
-      Open List {{ l.listID }}
-    </button>
-  </li>
-</ul>
+          <div class="mb-3">
+            <div class="d-flex flex-wrap gap-2">
+              <button
+                class="btn btn-outline-dark btn-sm"
+                *ngFor="let l of lists"
+                (click)="selectList(l.listID)"
+                [class.active]="l.listID === listID"
+              >
+                List {{ l.listID }}
+              </button>
+            </div>
+          </div>
 
-<hr />
+          <hr />
 
-<div *ngIf="listID">
-  <h3>Selected List: {{ listID }}</h3>
+          <div *ngIf="listID; else noList">
+            <h5 class="mb-2">Selected List: {{ listID }}</h5>
 
-  <h4>Add item</h4>
-  <input placeholder="name" [(ngModel)]="newName" />
-  <input placeholder="quantity" type="number" [(ngModel)]="newQty" />
-  <button (click)="add()" [disabled]="adding || !newName">
-    {{ adding ? "Adding..." : "Add" }}
-  </button>
+            <div class="add-area pt-3">
+              <h6 class="mb-2">Add item</h6>
+              <div class="d-flex gap-2 flex-wrap">
+                <input class="form-control" style="max-width: 220px" placeholder="name" [(ngModel)]="newName" />
+                <input class="form-control" style="max-width: 140px" placeholder="qty" type="number" [(ngModel)]="newQty" />
+                <button class="btn btn-success" (click)="addToShoppingList()" [disabled]="adding || !newName">
+                  {{ adding ? "Adding..." : "Add" }}
+                </button>
+              </div>
+            </div>
 
-  <h4>Items</h4>
-  <button (click)="load()" [disabled]="loading">
-    {{ loading ? "Loading..." : "Refresh Items" }}
-  </button>
+            <div class="mt-3">
+              <h6 class="mb-2">Items</h6>
+              <div class="text-muted mb-2" *ngIf="loading">Loading items...</div>
 
-  <ul>
-    <li *ngFor="let item of items">
-      <input type="checkbox" [checked]="item.checked" (change)="toggle(item, $event)" />
-      {{ item.name }} ({{ item.quantity ?? "n/a" }})
-      <button (click)="del(item)">Delete</button>
-    </li>
-  </ul>
-</div>
+              <div class="paper-line" *ngFor="let item of items">
+                <div class="d-flex align-items-center justify-content-between gap-2">
+                  <div class="d-flex align-items-center gap-3">
+                    <input class="form-check-input big-check" type="checkbox" [checked]="item.checked" (change)="toggle(item, $event)" />
+                    <span class="item-text" [class.checked]="item.checked">
+                      {{ item.name }} ({{ item.quantity ?? "n/a" }})
+                    </span>
+                  </div>
 
-<div *ngIf="error">
-  <p><strong>Error:</strong> {{ error }}</p>
+                  <button class="btn btn-outline-danger btn-sm" (click)="del(item)">Delete</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <ng-template #noList>
+            <p class="text-muted mb-0">Create a list to begin.</p>
+          </ng-template>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: Inventory / Ingredients tester -->
+    <div class="col-12 col-lg-6">
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <h2 class="mb-3">Inventory (Ingredients)</h2>
+
+          <!-- Filters -->
+          <div class="d-flex gap-2 flex-wrap mb-3">
+            <input
+              class="form-control"
+              style="max-width: 260px"
+              type="text"
+              placeholder="Search..."
+              [(ngModel)]="invSearch"
+              (input)="loadInventory()"
+            />
+
+            <select
+              class="form-select"
+              style="max-width: 260px"
+              [(ngModel)]="invCategoryId"
+              (change)="loadInventory()"
+            >
+              <option [ngValue]="null">All categories</option>
+              <option *ngFor="let c of categories" [ngValue]="c.CategoryID">
+                {{ c.name }}
+              </option>
+            </select>
+
+            <span class="text-muted" *ngIf="invLoading">Loading inventory...</span>
+          </div>
+
+          <!-- Manual add -->
+          <div class="border rounded p-3 mb-3">
+            <h6 class="mb-2">Add / Adjust Inventory</h6>
+            <div class="d-flex gap-2 flex-wrap">
+              <input class="form-control" style="max-width: 260px" placeholder="Ingredient name" [(ngModel)]="invNewName" />
+              <input class="form-control" style="max-width: 140px" type="number" placeholder="Qty" [(ngModel)]="invNewQty" />
+              <button class="btn btn-success" (click)="addInventoryManual()" [disabled]="!invNewName.trim()">
+                Save
+              </button>
+            </div>
+            <div class="form-text">
+              Tip: use negative qty to reduce stock (e.g. -1).
+            </div>
+          </div>
+
+          <!-- List -->
+          <div *ngIf="fridgeItems.length; else emptyInv" class="list-group">
+          <div
+            class="list-group-item d-flex align-items-center justify-content-between"
+            *ngFor="let item of fridgeItems"
+          >
+            <div>
+              <div class="fw-semibold">
+                {{ item.name }}
+                <span class="badge bg-secondary ms-2">{{ item.category }}</span>
+              </div>
+              <div class="small text-muted">
+                Qty: {{ item.quantity }}
+                • CategoryID: {{ item.CategoryID }}
+                <span *ngIf="item.expiryDate"> • Exp: {{ item.expiryDate }}</span>
+              </div>
+            </div>
+
+            <div class="d-flex gap-2">
+              <button class="btn btn-outline-secondary btn-sm" (click)="adjustQty(item, -1)">-1</button>
+              <button class="btn btn-outline-secondary btn-sm" (click)="adjustQty(item, +1)">+1</button>
+            </div>
+          </div>
+        </div>
+
+          <ng-template #emptyInv>
+            <p class="text-muted mb-0">No inventory rows yet (or none match the filter).</p>
+          </ng-template>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="error" class="alert alert-danger mt-4">
+    <strong>Error:</strong> {{ error }}
+  </div>
 </div>
