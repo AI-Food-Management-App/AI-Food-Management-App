@@ -39,17 +39,12 @@
     </div>
 
     <div class="mb-2">
-      <select [(ngModel)]="selectedCategory" (change)="loadFridge()">
-        <option [ngValue]="null">All categories</option>
-        <option>Fruits</option>
-        <option>Vegetables</option>
-        <option>Meat</option>
-        <option>Poultry</option>
-        <option>Seafood</option>
-        <option>Dairy</option>
-        <option>Grains</option>
-        <option>Other / Uncategorized</option>
-      </select>
+      <select [(ngModel)]="selectedCategoryId">
+      <option [ngValue]="null">All categories</option>
+      <option *ngFor="let c of categories" [ngValue]="c.CategoryID">
+        {{ c.name }}
+      </option>
+    </select>
     </div>
 
     <ul>
