@@ -20,8 +20,6 @@ export class UploadComponent implements OnInit {
 
   search = "";
   selectedCategoryId: number | null = null;
-
-  // ✅ NEW: categories loaded from Supabase
   categories: Category[] = [];
 
   loading = false;
@@ -36,7 +34,6 @@ export class UploadComponent implements OnInit {
   constructor(private ml: MlService, private fridge: FridgeService) {}
 
   async ngOnInit() {
-    // ✅ preload categories + fridge on open
     await Promise.all([this.loadCategories(), this.loadFridge()]);
   }
 
