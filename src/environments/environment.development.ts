@@ -1,7 +1,6 @@
 export const environment = {
   production: false,
-  apiBaseUrl: "/api" // dev uses proxy so still /api
-
+  apiBaseUrl: "https://food-server-uf1u.onrender.com/api"
 
 
 };
