@@ -1,58 +1,66 @@
-<div class="card text-center mb-3">
-  <div class="card-body">
-    <h2 class="card-title">Upload / Scan Food Label</h2>
+<div class="container my-4">
+  <div class="row g-4">
+    <!-- Upload / Scan -->
+    <div class="col-12 col-lg-6">
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <h2 class="mb-3">Upload / Scan Food Label</h2>
 
-    <input type="file" accept="image/*" capture="environment" (change)="onFile($event)" />
+          <input type="file" accept="image/*" capture="environment" (change)="onFile($event)" />
 
-    <div *ngIf="previewUrl">
-      <p>Preview:</p>
-      <img [src]="previewUrl" alt="preview" width="250" />
-    </div>
+          <div *ngIf="previewUrl" class="mt-3">
+            <p>Preview:</p>
+            <img [src]="previewUrl" alt="preview" width="250" />
+          </div>
 
-     <button (click)="detectAndSave()" [disabled]="!selectedFile || loading" >
-       {{ loading ? "Processing..." : "Detect & Save" }}
-     </button>
+          <button class="btn btn-success" (click)="detectAndSave()" [disabled]="!selectedFile || loading" >
+            {{ loading ? "Processing..." : "Detect & Save" }}
+          </button>
 
-     <div *ngIf="detectedIngredient">
-       <p><strong>Detected:</strong> {{ detectedIngredient }}</p>
+          <div *ngIf="detectedIngredient" class="alert alert-success mt-3">
+            <strong>Detected:</strong> {{ detectedIngredient }}
+          </div>
+
+          <div *ngIf="error" class="alert alert-danger mt-3">
+            <strong>Error:</strong> {{ error }}
+          </div>
+        </div>
+       </div>
      </div>
 
-      <div *ngIf="error">
-       <p><strong>Error:</strong> {{ error }}</p>
-     </div>
- </div>
-</div>
- 
-<div class="card text-center mb-3">
-  <div class="card-body">
-    <hr />
+     <!-- Fridge contents -->
+     <div class="col-12 col-lg-6">
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <h2 class="mb-3">My Fridge Ingredients</h2>
 
-    <h3>My Fridge Ingredients</h3>
+          <div class="mb-3">
+            <input
+              type="text"
+              placeholder="Search ingredient..."
+              [(ngModel)]="search"
+              (input)="loadFridge()"
+              class="form-control"
+            />
+          </div>
 
-    <div class="mb-2">
-      <input
-        type="text"
-        placeholder="Search ingredient..."
-        [(ngModel)]="search"
-        (input)="loadFridge()"
-      />
-    </div>
+          <div class="mb-3">
+            <select [(ngModel)]="selectedCategoryId" (change)="loadFridge()" class="form-select">
+              <option [ngValue]="null">All categories</option>
+              <option *ngFor="let c of categories" [ngValue]="c.CategoryID">
+                {{ c.name }}
+              </option>
+            </select>
+          </div>
 
-    <div class="mb-2">
-      <select [(ngModel)]="selectedCategoryId" (change)="loadFridge()">
-      <option [ngValue]="null">All categories</option>
-      <option *ngFor="let c of categories" [ngValue]="c.CategoryID">
-        {{ c.name }}
-      </option>
-    </select>
-    </div>
+          <ul class="list-group">
+            <li class="list-group-item" *ngFor="let item of fridgeItems">
+              {{ item.name }} ({{ item.quantity }} - {{ item.category }})   
+           </li>
+          </ul>
 
-    <ul>
-      <li *ngFor="let item of fridgeItems">
-        {{ item.name }} ({{ item.quantity }} - {{ item.category }})
-      </li>
-    </ul>
-  </div>
 
 </div>
- 
+
+
+
