@@ -1,88 +1,70 @@
-<body>
-  <section class="hero d-flex align-items-center text-center text-white">
-   <div class="container">
+<section class="hero d-flex align-items-center text-center text-white">
+  <div class="container">
+    <p class="text-uppercase opacity-50 mb-2">Food management service</p>
+    <h1 class="display-4 fw-bold mb-3">
+      Don't forget and stay fed <br /> with M.ai Food
+    </h1>
+    <p class="lead mb-4">Try out our features!</p>
 
-     <p class="text-uppercase opacity-50 mb-2">
-       Food management service
-     </p>
+    <div class="d-flex justify-content-center gap-3">
 
-     <h1 class="display-4 fw-bold mb-3">
-       Don’t forget and stay fed <br />
-       with M.ai Food
-     </h1>
-
-      <p class="lead mb-4">
-       Try out our features!
-      </p>
-
-      <div class="d-flex justify-content-center gap-3">
-       <a routerLink="/scan" class="btn btn-lg btn-primary rounded-pill px-4">
-         Scan groceries
-       </a>
-
-        <a routerLink="/shopping" class="btn btn-lg btn-outline-light rounded-pill px-4">
-          Shopping list
+      <!-- Show login/register if NOT logged in -->
+      <ng-container *ngIf="!auth.isLoggedIn()">
+        <a routerLink="/login" class="btn btn-lg btn-primary rounded-pill px-4">
+          Login
         </a>
-      </div>
+        <a routerLink="/register" class="btn btn-lg btn-outline-light rounded-pill px-4">
+          Register
+        </a>
+      </ng-container>
+
+      <!-- Show app buttons if logged in -->
+      <ng-container *ngIf="auth.isLoggedIn()">
+        <a routerLink="/login" class="btn btn-lg btn-primary rounded-pill px-4">
+          Login
+        </a>
+        <a routerLink="/register" class="btn btn-lg btn-outline-light rounded-pill px-4">
+          Register
+        </a>
+      </ng-container>
+
     </div>
-  </section>
-  
+  </div>
+</section>
+
 <section class="how-it-works container py-5">
-    <h2 class="text-center section-title">How this works</h2>
+  <h2 class="text-center section-title">How this works</h2>
 
-    <!-- STEP 1 -->
-    <div class="row align-items-center step">
-      
-      <div class="col-md-6 text-center">
-        <img src="/logo.jpeg" alt="Logo" class="img" />
-          
-      </div>
-
-      <div class="col-md-6">
-        <small class="step-label">Create an account</small>
-        <h4>Create/login to an existing account to get started</h4>
-        <p>
-          An account is created with your email and a desired password.
-        </p>
-      </div>
+  <div class="row align-items-center step">
+    <div class="col-md-6 text-center">
+      <img src="/logo.jpeg" alt="Logo" class="img" />
     </div>
-
-    <!-- STEP 2 (reverse) -->
-    <div class="row align-items-center step flex-md-row-reverse">
-      
-      <div class="col-md-6 text-center">
-        <div class="img-placeholder phone">
-          App Screen
-        </div>
-      </div>
-
-      <div class="col-md-6">
-        <small class="step-label">Explore varieties</small>
-        <h4>Take a photo of your groceries</h4>
-        <p>
-          And let us do the storing. Optimise your shopping!
-        </p>
-      </div>
+    <div class="col-md-6">
+      <small class="step-label">Create an account</small>
+      <h4>Create/login to an existing account to get started</h4>
+      <p>An account is created with your email and a desired password.</p>
     </div>
+  </div>
 
-    <!-- STEP 3 -->
-    <div class="row align-items-center step">
-      
-      <div class="col-md-6 text-center">
-        <div class="img-placeholder phone">
-          App Screen
-        </div>
-      </div>
-
-      <div class="col-md-6">
-        <small class="step-label">Take a look!</small>
-        <h4>Once you take a photo, look at your list!</h4>
-        <p>
-          Keep track of what you buy often and what brands.
-        </p>
-      </div>
+  <div class="row align-items-center step flex-md-row-reverse">
+    <div class="col-md-6 text-center">
+      <div class="img-placeholder phone">App Screen</div>
     </div>
+    <div class="col-md-6">
+      <small class="step-label">Explore varieties</small>
+      <h4>Take a photo of your groceries</h4>
+      <p>And let us do the storing. Optimise your shopping!</p>
+    </div>
+  </div>
 
-  </section>
-</body>
-  
+  <div class="row align-items-center step">
+    <div class="col-md-6 text-center">
+      <div class="img-placeholder phone">App Screen</div>
+    </div>
+    <div class="col-md-6">
+      <small class="step-label">Take a look!</small>
+      <h4>Once you take a photo, look at your list!</h4>
+      <p>Keep track of what you buy often and what brands.</p>
+    </div>
+  </div>
+</section>
