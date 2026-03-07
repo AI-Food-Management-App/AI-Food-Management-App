@@ -39,7 +39,7 @@
     </div>
 
     <div class="mb-2">
-      <select [(ngModel)]="selectedCategoryId">
+      <select [(ngModel)]="selectedCategoryId" (change)="loadFridge()">
       <option [ngValue]="null">All categories</option>
       <option *ngFor="let c of categories" [ngValue]="c.CategoryID">
         {{ c.name }}

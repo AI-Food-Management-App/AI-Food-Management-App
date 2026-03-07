@@ -1,1 +1,86 @@
-<p>inventory.component works!</p>
+<div class="container my-4">
+  <div class="row g-4">
+    <!-- Inventory / Ingredients -->
+    <div class="col-12">
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <h2 class="mb-3">Inventory (Ingredients)</h2>
+
+          <!-- Filters -->
+          <div class="d-flex gap-2 flex-wrap mb-3">
+            <input
+              class="form-control"
+              style="max-width: 260px"
+              type="text"
+              placeholder="Search..."
+              [(ngModel)]="invSearch"
+              (input)="loadInventory()"
+            />
+
+            <select
+              class="form-select"
+              style="max-width: 260px"
+              [(ngModel)]="invCategoryId"
+              (change)="loadInventory()"
+            >
+              <option [ngValue]="null">All categories</option>
+              <option *ngFor="let c of categories" [ngValue]="c.CategoryID">
+                {{ c.name }}
+              </option>
+            </select>
+
+            <span class="text-muted" *ngIf="invLoading">Loading inventory...</span>
+          </div>
+
+          <!-- Manual add -->
+          <div class="border rounded p-3 mb-3">
+            <h6 class="mb-2">Add / Adjust Inventory</h6>
+            <div class="d-flex gap-2 flex-wrap">
+              <input class="form-control" style="max-width: 260px" placeholder="Ingredient name" [(ngModel)]="invNewName" />
+              <input class="form-control" style="max-width: 140px" type="number" placeholder="Qty" [(ngModel)]="invNewQty" />
+              <button class="btn btn-success" (click)="addInventoryManual()" [disabled]="!invNewName.trim()">
+                Save
+              </button>
+            </div>
+            <div class="form-text">
+              Tip: use negative qty to reduce stock (e.g. -1).
+            </div>
+          </div>
+
+          <!-- List -->
+          <div *ngIf="fridgeItems.length; else emptyInv" class="list-group">
+          <div
+            class="list-group-item d-flex align-items-center justify-content-between"
+            *ngFor="let item of fridgeItems"
+          >
+            <div>
+              <div class="fw-semibold">
+                {{ item.name }}
+                <span class="badge bg-secondary ms-2">{{ item.category }}</span>
+              </div>
+              <div class="small text-muted">
+                Qty: {{ item.quantity }}
+                • CategoryID: {{ item.CategoryID }}
+                <span *ngIf="item.expiryDate"> • Exp: {{ item.expiryDate }}</span>
+              </div>
+            </div>
+
+            <div class="d-flex gap-2">
+              <button class="btn btn-outline-secondary btn-sm" (click)="adjustQty(item, -1)">-1</button>
+              <button class="btn btn-outline-secondary btn-sm" (click)="adjustQty(item, +1)">+1</button>
+            </div>
+          </div>
+        </div>
+
+          <ng-template #emptyInv>
+            <p class="text-muted mb-0">No inventory rows yet (or none match the filter).</p>
+          </ng-template>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="error" class="alert alert-danger mt-4">
+    <strong>Error:</strong> {{ error }}
+  </div>
+</div>

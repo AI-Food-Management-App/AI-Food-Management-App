@@ -2,15 +2,12 @@ import { Component, OnInit } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { FormsModule } from "@angular/forms";
 import { firstValueFrom } from "rxjs";
-import { Category } from "../../services/fridge.service";
 
 import {
   ShoppingListService,
   ShoppingItem,
   ShoppingList
 } from "../../services/shopping-list.service";
-
-import { FridgeService, FridgeItem } from "../../services/fridge.service";
 
 @Component({
   selector: "app-shopping-list",
@@ -33,27 +30,12 @@ export class ShoppingListComponent implements OnInit {
   loading = false;
   loadingLists = false;
 
-  // ---------- Inventory / Fridge ----------
-  fridgeItems: FridgeItem[] = [];
-  invLoading = false;
-
-  invSearch = "";
-  invCategory: string | null = null;
-
-  // manual add
-  invNewName = "";
-  invNewQty: number | null = 1;
-
-  categories: Category[] = [];
-  invCategoryId: number | null = null;
-
   error: string | null = null;
 
-  constructor(private shopping: ShoppingListService, private fridge: FridgeService) {}
+  constructor(private shopping: ShoppingListService) {}
 
   async ngOnInit() {
-    await Promise.all([this.loadLists(), this.loadCategories()]);
-    await this.loadInventory();
+    await this.loadLists();
   }
 
   // ---------------- Shopping Lists ----------------
@@ -72,14 +54,6 @@ export class ShoppingListComponent implements OnInit {
       this.error = e?.message || "Failed to load lists";
     } finally {
       this.loadingLists = false;
-    }
-  }
-  async loadCategories() {
-  this.error = null;
-  try {
-      this.categories = await firstValueFrom(this.fridge.getCategories());
-    } catch (e: any) {
-      this.error = e?.message || "Failed to load categories";
     }
   }
 
@@ -153,47 +127,6 @@ export class ShoppingListComponent implements OnInit {
       await this.loadListItems();
     } catch (e: any) {
       this.error = e?.message || "Failed to delete item";
-    }
-  }
-
-  // ---------------- Inventory / Fridge ----------------
-  async loadInventory() {
-    this.invLoading = true;
-    this.error = null;
-    try {
-      this.fridgeItems = await firstValueFrom(
-      this.fridge.getItems(this.invCategoryId ?? undefined, this.invSearch || undefined)
-    );
-    } catch (e: any) {
-      this.error = e?.message || "Failed to load inventory";
-    } finally {
-      this.invLoading = false;
-    }
-  }
-
-  async addInventoryManual() {
-  const name = this.invNewName.trim();
-  if (!name) return;
-
-  const qty = Number(this.invNewQty ?? 1);
-  this.error = null;
-  try {
-    await firstValueFrom(this.fridge.adjustItem(name, Number.isFinite(qty) ? qty : 1));
-    this.invNewName = "";
-    this.invNewQty = 1;
-    await this.loadInventory();
-  } catch (e: any) {
-    this.error = e?.message || "Failed to add inventory item";
-  }
-}
-
-async adjustQty(item: FridgeItem, delta: number) {
-  this.error = null;
-  try {
-    await firstValueFrom(this.fridge.adjustItem(item.name, delta));
-    await this.loadInventory();
-    } catch (e: any) {
-      this.error = e?.message || "Failed to update quantity";
     }
   }
 }
