@@ -1,15 +1,11 @@
 <div class="profile-page d-flex justify-content-center align-items-start py-5">
-
-  <!-- Loading -->
   <div *ngIf="loading" class="text-center text-muted mt-5">Loading profile...</div>
 
-  <!-- Card -->
   <div *ngIf="!loading" class="profile-card">
 
     <div *ngIf="successMsg" class="alert alert-success py-2 mb-3">{{ successMsg }}</div>
     <div *ngIf="errorMsg"   class="alert alert-danger  py-2 mb-3">{{ errorMsg }}</div>
 
-    <!-- Avatar + top row -->
     <div class="profile-top">
       <div class="avatar-box">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"

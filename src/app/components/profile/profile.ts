@@ -77,24 +77,35 @@ export class ProfileComponent implements OnInit {
     });
   }
 
-  onSave() {
-    if (this.form.invalid) { this.form.markAllAsTouched(); return; }
-    this.saving = true;
-    this.errorMsg = '';
-    this.profileService.updateProfile(this.form.value).subscribe({
-      next: (res) => {
-        this.profile = res.profile;
-        this.editMode = false;
-        this.saving = false;
-        this.successMsg = 'Profile updated successfully!';
-        setTimeout(() => this.successMsg = '', 3000);
-      },
-      error: (err) => {
-        this.errorMsg = err.error?.error || 'Failed to update profile.';
-        this.saving = false;
-      }
-    });
-  }
+onSave() {
+  if (this.form.invalid) { this.form.markAllAsTouched(); return; }
+  this.saving   = true;
+  this.errorMsg = '';
+
+  console.log('Sending update:', this.form.value); 
+
+  this.profileService.updateProfile(this.form.value).subscribe({
+    next: (res) => {
+      console.log('Update response received:', res); 
+      console.log('Profile from response:', res?.profile); 
+
+      this.profile  = res.profile;
+      this.editMode = false;
+      this.saving   = false;
+      this.successMsg = 'Profile updated successfully!';
+      setTimeout(() => this.successMsg = '', 3000);
+    },
+    error: (err) => {
+      console.error('Update error:', err);
+      this.errorMsg = err.error?.error || 'Failed to update profile.';
+      this.saving   = false;
+    },
+    complete: () => {
+      console.log('Update observable completed'); // debug
+      this.saving = false; 
+    }
+  });
+}
 
   onDelete() {
     if (!confirm('Are you sure you want to delete your account? This cannot be undone.')) return;

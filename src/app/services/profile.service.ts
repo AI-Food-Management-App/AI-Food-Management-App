@@ -12,8 +12,11 @@ export class ProfileService {
     return this.http.get<Profile>(`${this.api}/profile`);
   }
 
-  updateProfile(data: Partial<Pick<Profile, 'name' | 'dob' | 'allergies'>>) {
-    return this.http.put<{ ok: boolean; profile: Profile }>(`${this.api}/profile`, data);
+  updateProfile(data: { name?: string; dob?: string; allergies?: string[] }) {
+    return this.http.put<{ ok: boolean; profile: Profile }>(
+      `${this.api}/profile`,
+      data
+    );
   }
 
   deleteProfile() {
