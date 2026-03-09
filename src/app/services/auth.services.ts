@@ -1,22 +1,26 @@
-import { Injectable } from '@angular/core';
+import { Injectable,Inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { tap } from 'rxjs/operators';
+import { API_BASE_URL } from "./api-config";
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private readonly TOKEN_KEY = 'food_app_token';
   private readonly USER_KEY = 'food_app_user';
-  private api = '/api';
+  //private api = '/api';
+  //api is pulling to a local host, but in production it should be the actual backend URL
 
-  constructor(private http: HttpClient, private router: Router) {}
+  
+  constructor(private router: Router,private http: HttpClient,
+    @Inject(API_BASE_URL) private apiBaseUrl: string) {}
 
 register(payload: { name: string; dob: string; email: string; password: string }) {
-    return this.http.post(`${this.api}/auth/register`, payload);
+    return this.http.post(`${this.apiBaseUrl}/auth/register`, payload);
 }
 
 login(email: string, password: string) {
-    return this.http.post<{ token: string; user: any }>(`${this.api}/auth/login2`, { email, password })
+    return this.http.post<{ token: string; user: any }>(`${this.apiBaseUrl}/auth/login2`, { email, password })
       .pipe(tap(res => {
         localStorage.setItem(this.TOKEN_KEY, res.token);
         localStorage.setItem(this.USER_KEY, JSON.stringify(res.user));
