@@ -20,7 +20,7 @@ register(payload: { name: string; dob: string; email: string; password: string }
 }
 
 login(email: string, password: string) {
-    return this.http.post<{ token: string; user: any }>(`${this.apiBaseUrl}/auth/login2`, { email, password })
+    return this.http.post<{ token: string; user: any }>(`${this.apiBaseUrl}/auth/login`, { email, password })
       .pipe(tap(res => {
         localStorage.setItem(this.TOKEN_KEY, res.token);
         localStorage.setItem(this.USER_KEY, JSON.stringify(res.user));
