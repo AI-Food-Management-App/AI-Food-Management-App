@@ -1,32 +1,35 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { FormsModule } from "@angular/forms";
 import { firstValueFrom } from "rxjs";
 import { Category, FridgeService, FridgeItem } from "../../services/fridge.service";
 
 @Component({
-  selector: 'app-inventory',
+  selector: "app-inventory",
   standalone: true,
   imports: [CommonModule, FormsModule],
-  templateUrl: './inventory.component.html',
-  styleUrl: './inventory.component.css',
+  templateUrl: "./inventory.component.html",
+  styleUrl: "./inventory.component.css",
 })
 export class InventoryComponent implements OnInit {
-  // ---------- Inventory / Fridge ----------
   fridgeItems: FridgeItem[] = [];
+  categories: Category[] = [];
+
   invLoading = false;
+  error: string | null = null;
 
   invSearch = "";
-  invCategory: string | null = null;
+  invCategoryId: number | null = null;
+  selectedTag = "";
 
-  // manual add
   invNewName = "";
   invNewQty: number | null = 1;
+  invNewCategoryId: number | null = null;
+  invNewExpiryDate: string | null = null;
+  invNewDescription = "";
+  invNewTags = "";
 
-  categories: Category[] = [];
-  invCategoryId: number | null = null;
-
-  error: string | null = null;
+  expandedItemId: number | null = null;
 
   constructor(private fridge: FridgeService) {}
 
@@ -40,48 +43,106 @@ export class InventoryComponent implements OnInit {
     try {
       this.categories = await firstValueFrom(this.fridge.getCategories());
     } catch (e: any) {
-      this.error = e?.message || "Failed to load categories";
+      this.error = e?.error?.error || e?.message || "Failed to load categories";
     }
   }
 
-  // ---------------- Inventory / Fridge ----------------
   async loadInventory() {
     this.invLoading = true;
     this.error = null;
+
     try {
       this.fridgeItems = await firstValueFrom(
-      this.fridge.getItems(this.invCategoryId ?? undefined, this.invSearch || undefined)
-    );
+        this.fridge.getItems(
+          this.invCategoryId ?? undefined,
+          this.invSearch || undefined,
+          this.selectedTag || undefined
+        )
+      );
     } catch (e: any) {
-      this.error = e?.message || "Failed to load inventory";
+      this.error = e?.error?.error || e?.message || "Failed to load inventory";
     } finally {
       this.invLoading = false;
     }
   }
 
   async addInventoryManual() {
-  const name = this.invNewName.trim();
-  if (!name) return;
+    const name = this.invNewName.trim();
+    if (!name) return;
 
-  const qty = Number(this.invNewQty ?? 1);
-  this.error = null;
-  try {
-    await firstValueFrom(this.fridge.adjustItem(name, Number.isFinite(qty) ? qty : 1));
-    this.invNewName = "";
-    this.invNewQty = 1;
-    await this.loadInventory();
-  } catch (e: any) {
-    this.error = e?.message || "Failed to add inventory item";
-  }
-}
+    const qty = Number(this.invNewQty ?? 1);
+    const tags = this.parseTags(this.invNewTags);
 
-async adjustQty(item: FridgeItem, delta: number) {
-  this.error = null;
-  try {
-    await firstValueFrom(this.fridge.adjustItem(item.name, delta));
-    await this.loadInventory();
+    this.error = null;
+
+    try {
+      await firstValueFrom(
+        this.fridge.adjustItem(
+          name,
+          Number.isFinite(qty) ? qty : 1,
+          this.invNewExpiryDate,
+          this.invNewCategoryId,
+          this.invNewDescription,
+          tags
+        )
+      );
+
+      this.invNewName = "";
+      this.invNewQty = 1;
+      this.invNewCategoryId = null;
+      this.invNewExpiryDate = null;
+      this.invNewDescription = "";
+      this.invNewTags = "";
+
+      await this.loadInventory();
     } catch (e: any) {
-      this.error = e?.message || "Failed to update quantity";
+      this.error = e?.error?.error || e?.message || "Failed to add inventory item";
     }
+  }
+
+  async adjustQty(item: FridgeItem, delta: number) {
+    this.error = null;
+    try {
+      await firstValueFrom(this.fridge.adjustItem(item.name, delta));
+      await this.loadInventory();
+    } catch (e: any) {
+      this.error = e?.error?.error || e?.message || "Failed to update quantity";
+    }
+  }
+
+  toggleExpand(item: FridgeItem) {
+    this.expandedItemId = this.expandedItemId === item.IngredientID ? null : item.IngredientID;
+  }
+
+  async saveItemDetails(item: FridgeItem) {
+    this.error = null;
+    try {
+      await firstValueFrom(
+        this.fridge.updateItem(item.IngredientID, {
+          CategoryID: item.CategoryID,
+          expiryDate: item.expiryDate,
+          description: item.description ?? null,
+          tags: item.tags ?? []
+        })
+      );
+      await this.loadInventory();
+    } catch (e: any) {
+      this.error = e?.error?.error || e?.message || "Failed to save item";
+    }
+  }
+
+  parseTags(input: string): string[] {
+    return input
+      .split(",")
+      .map(t => t.trim())
+      .filter(Boolean);
+  }
+
+  tagsToString(tags?: string[] | null): string {
+    return (tags ?? []).join(", ");
+  }
+
+  trackByItemId(_: number, item: FridgeItem) {
+    return item.IngredientID;
   }
 }
