@@ -1,76 +1,162 @@
-<div class="container my-4">
-  <div class="row g-4">
-    <!-- LEFT: Shopping List tester -->
-    <div class="col-12 col-lg-6">
-      <div class="card paper shadow-sm">
-        <div class="card-body">
-          <h2 class="paper-title mb-3">Shopping Lists (Test)</h2>
+<div class="shopping-page">
+  <div class="shopping-shell">
+    <div class="page-header">
+      <div class="eyebrow">Smart kitchen</div>
+      <h2>Shopping List</h2>
+      <p class="subtext">Plan, tick off, confirm to inventory, and keep a short history.</p>
+    </div>
 
-          <div class="d-flex gap-2 flex-wrap mb-3">
-            <button class="btn btn-primary" (click)="create()" [disabled]="creating">
-              {{ creating ? "Creating..." : "Create New List" }}
-            </button>
+    <div *ngIf="error" class="message-card error-card">
+      <strong>Error:</strong> {{ error }}
+    </div>
 
-            <span class="text-muted" *ngIf="loadingLists">Loading lists...</span>
-          </div>
+    <div *ngIf="success" class="message-card success-card">
+      {{ success }}
+    </div>
 
-          <div class="mb-3">
-            <div class="d-flex flex-wrap gap-2">
-              <button
-                class="btn btn-outline-dark btn-sm"
-                *ngFor="let l of lists"
-                (click)="selectList(l.listID)"
-                [class.active]="l.listID === listID"
-              >
-                List {{ l.listID }}
-              </button>
-            </div>
-          </div>
+    <!-- CREATE NEW LIST -->
+    <div class="paper-card" *ngIf="!openList">
+      <div class="paper-inner">
+        <h3 class="paper-title">Create a new shopping list</h3>
+        <p class="paper-subtext">Only one shopping list can be open at a time.</p>
 
-          <hr />
+        <div class="form-stack">
+          <input
+            class="paper-input"
+            placeholder="List name (e.g. Weekly groceries)"
+            [(ngModel)]="newListName"
+          />
 
-          <div *ngIf="listID; else noList">
-            <h5 class="mb-2">Selected List: {{ listID }}</h5>
-
-            <div class="add-area pt-3">
-              <h6 class="mb-2">Add item</h6>
-              <div class="d-flex gap-2 flex-wrap">
-                <input class="form-control" style="max-width: 220px" placeholder="name" [(ngModel)]="newName" />
-                <input class="form-control" style="max-width: 140px" placeholder="qty" type="number" [(ngModel)]="newQty" />
-                <button class="btn btn-success" (click)="addToShoppingList()" [disabled]="adding || !newName">
-                  {{ adding ? "Adding..." : "Add" }}
-                </button>
-              </div>
-            </div>
-
-            <div class="mt-3">
-              <h6 class="mb-2">Items</h6>
-              <div class="text-muted mb-2" *ngIf="loading">Loading items...</div>
-
-              <div class="paper-line" *ngFor="let item of items">
-                <div class="d-flex align-items-center justify-content-between gap-2">
-                  <div class="d-flex align-items-center gap-3">
-                    <input class="form-check-input big-check" type="checkbox" [checked]="item.checked" (change)="toggle(item, $event)" />
-                    <span class="item-text" [class.checked]="item.checked">
-                      {{ item.name }} ({{ item.quantity ?? "n/a" }})
-                    </span>
-                  </div>
-
-                  <button class="btn btn-outline-danger btn-sm" (click)="del(item)">Delete</button>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <ng-template #noList>
-            <p class="text-muted mb-0">Create a list to begin.</p>
-          </ng-template>
+          <button class="paper-btn primary" (click)="create()" [disabled]="creating || !newListName.trim()">
+            {{ creating ? "Creating..." : "Create list" }}
+          </button>
         </div>
       </div>
     </div>
-  </div>
 
-  <div *ngIf="error" class="alert alert-danger mt-4">
-    <strong>Error:</strong> {{ error }}
+    <!-- OPEN LIST -->
+    <div class="paper-card" *ngIf="openList">
+      <div class="paper-inner">
+        <div class="paper-header">
+          <div>
+            <div class="list-label">Open shopping list</div>
+            <h3 class="paper-title">{{ openList.name }}</h3>
+            <div class="paper-meta">
+              Created {{ formatDate(openList.createdAt) }}
+            </div>
+          </div>
+        </div>
+
+        <!-- Add item -->
+        <div class="add-block">
+          <div class="section-label">Add item</div>
+
+          <div class="input-stack">
+            <input
+              class="paper-input"
+              placeholder="Item name"
+              [(ngModel)]="newName"
+            />
+
+            <div class="row-2">
+              <input
+                class="paper-input"
+                type="number"
+                placeholder="Qty"
+                [(ngModel)]="newQty"
+              />
+
+              <button class="paper-btn add-btn" (click)="addToShoppingList()" [disabled]="adding || !newName.trim()">
+                {{ adding ? "Adding..." : "Add" }}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Checklist -->
+        <div class="items-block">
+          <div class="items-header">
+            <div class="section-label">Items</div>
+            <div class="small-muted">{{ checkedCount }} checked</div>
+          </div>
+
+          <div class="loading-line" *ngIf="loading">Loading items...</div>
+
+          <div *ngIf="items.length; else noItems">
+            <div
+              class="paper-line"
+              *ngFor="let item of items; trackBy: trackByItemId"
+              [class.checked-row]="item.checked"
+            >
+              <div class="item-row">
+                <label class="item-left">
+                  <input
+                    class="big-check"
+                    type="checkbox"
+                    [checked]="item.checked"
+                    (change)="toggle(item, $event)"
+                  />
+                  <span class="item-text" [class.checked]="item.checked">
+                    {{ item.name }}
+                    <span class="qty-text" *ngIf="item.quantity !== null">
+                      ({{ item.quantity }})
+                    </span>
+                  </span>
+                </label>
+
+                <button class="delete-btn" (click)="del(item)">Delete</button>
+              </div>
+            </div>
+          </div>
+
+          <ng-template #noItems>
+            <div class="empty-note">No items added yet.</div>
+          </ng-template>
+        </div>
+
+        <!-- Actions -->
+        <div class="action-grid">
+          <button
+            class="paper-btn confirm-btn"
+            (click)="confirmChecked()"
+            [disabled]="confirming || checkedCount === 0"
+          >
+            {{ confirming ? "Confirming..." : "Confirm checked" }}
+          </button>
+
+          <button
+            class="paper-btn close-btn"
+            (click)="closeList()"
+            [disabled]="closing"
+          >
+            {{ closing ? "Closing..." : "Close list" }}
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- History section -->
+    <div class="history-section">
+      <div class="history-header">
+        <h3>Recent history</h3>
+        <span class="small-muted" *ngIf="loadingHistory">Loading...</span>
+      </div>
+
+      <div *ngIf="historyLists.length; else noHistory" class="history-list">
+        <div
+          class="history-card"
+          *ngFor="let list of historyLists; trackBy: trackByListId"
+        >
+          <div class="history-name">{{ list.name }}</div>
+          <div class="history-meta">
+            Closed {{ formatDate(list.closedAt) }}
+          </div>
+        </div>
+      </div>
+
+      <ng-template #noHistory>
+        <div class="history-empty">No closed lists yet.</div>
+      </ng-template>
+    </div>
   </div>
 </div>

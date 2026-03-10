@@ -12,11 +12,12 @@ export type ShoppingItem = {
 };
 
 export type ShoppingList = {
-  listID: number;     // or id if your table uses id
-  createdAt?: string; // optional
+  listID: number;
+  name: string;
+  status: "open" | "closed";
+  createdAt?: string;
+  closedAt?: string | null;
 };
-
-
 
 @Injectable({ providedIn: "root" })
 export class ShoppingListService {
@@ -25,22 +26,24 @@ export class ShoppingListService {
     @Inject(API_BASE_URL) private apiBaseUrl: string
   ) {}
 
-  createList(): Observable<{ listID: number }> {
-    return this.http.post<{ listID: number }>(`${this.apiBaseUrl}/shopping-lists`, {  });
+  getOpenList(): Observable<ShoppingList | null> {
+    return this.http.get<ShoppingList | null>(`${this.apiBaseUrl}/shopping-lists/open`);
+  }
+
+  getHistory(): Observable<ShoppingList[]> {
+    return this.http.get<ShoppingList[]>(`${this.apiBaseUrl}/shopping-lists/history`);
+  }
+
+  createList(name: string): Observable<ShoppingList> {
+    return this.http.post<ShoppingList>(`${this.apiBaseUrl}/shopping-lists`, { name });
   }
 
   getList(listID: number): Observable<ShoppingItem[]> {
     return this.http.get<ShoppingItem[]>(`${this.apiBaseUrl}/shopping-lists/${listID}`);
   }
-  
-  getLists(): Observable<ShoppingList[]> {
-  return this.http.get<ShoppingList[]>(`${this.apiBaseUrl}/shopping-lists`);
-}
-
 
   addItem(listID: number, name: string, quantity?: number | null) {
     return this.http.post(`${this.apiBaseUrl}/shopping-lists/${listID}/items`, {
-      
       name,
       quantity: quantity ?? null
     });
@@ -54,5 +57,19 @@ export class ShoppingListService {
 
   deleteItem(listID: number, itemID: number) {
     return this.http.delete(`${this.apiBaseUrl}/shopping-lists/${listID}/items/${itemID}`);
+  }
+
+  confirmChecked(listID: number) {
+    return this.http.post<{ ok: true; moved: number; message?: string }>(
+      `${this.apiBaseUrl}/shopping-lists/${listID}/confirm`,
+      {}
+    );
+  }
+
+  closeList(listID: number) {
+    return this.http.patch<{ ok: true; list: ShoppingList }>(
+      `${this.apiBaseUrl}/shopping-lists/${listID}/close`,
+      {}
+    );
   }
 }
