@@ -1,25 +1,27 @@
-import { Injectable } from '@angular/core';
+import { Injectable, Inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Profile } from '../interface/profile';
+import { API_BASE_URL } from "./api-config";
 
 @Injectable({ providedIn: 'root' })
 export class ProfileService {
-  private api = '/api';
 
-  constructor(private http: HttpClient) {}
+
+  constructor(private http: HttpClient,
+    @Inject(API_BASE_URL) private apiBaseUrl: string) {}
 
   getProfile() {
-    return this.http.get<Profile>(`${this.api}/profile`);
+    return this.http.get<Profile>(`${this.apiBaseUrl}/profile`);
   }
 
   updateProfile(data: { name?: string; dob?: string; allergies?: string[] }) {
     return this.http.put<{ ok: boolean; profile: Profile }>(
-      `${this.api}/profile`,
+      `${this.apiBaseUrl}/profile`,
       data
     );
   }
 
   deleteProfile() {
-    return this.http.delete<{ ok: boolean }>(`${this.api}/profile`);
+    return this.http.delete<{ ok: boolean }>(`${this.apiBaseUrl}/profile`);
   }
 }
