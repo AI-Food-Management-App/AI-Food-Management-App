@@ -26,3 +26,16 @@
     color: rgb(196, 196, 196);
     box-shadow: 0 2px 4px rgba(182, 233, 180, 0.5);
 }
+.btn-logout {
+  background: #ff5a2c;
+  color: #fff;
+  border: none;
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.btn-logout:hover {
+  background: #e04a1e;
+  color: #fff;
+}

@@ -40,6 +40,13 @@
             <a class="nav-link" routerLink="/profile">Profile</a>
           </li>
 
+          <!-- Logout button — only visible when logged in -->
+          <li class="nav-item ms-lg-3 mt-2 mt-lg-0" *ngIf="authService.isLoggedIn()">
+            <button class="btn btn-logout rounded-pill px-3" (click)="logout()">
+              Log Out
+            </button>
+          </li>
+
         </ul>
       </div>
 

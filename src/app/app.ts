@@ -1,17 +1,21 @@
 import { Component, OnInit } from '@angular/core';
 import { RouterModule, RouterOutlet, Router, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
+import { CommonModule } from '@angular/common';
+import { AuthService } from './services/auth.services';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, RouterModule],
+  imports: [RouterOutlet, RouterModule, CommonModule],
   templateUrl: './app.html',
   styleUrl: './app.css'
 })
 export class App implements OnInit {
 
-  constructor(private router: Router) {}
+  constructor(private router: Router,
+    public authService: AuthService
+  ) {}
 
   ngOnInit() {
     this.router.events
@@ -24,5 +28,9 @@ export class App implements OnInit {
           toggler?.setAttribute('aria-expanded', 'false');
         }
       });
+  }
+
+  logout() {
+    this.authService.logout();  // clears token and redirects to /login
   }
 }
