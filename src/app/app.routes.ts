@@ -19,12 +19,12 @@ export const routes: Routes = [
   // { path: 'profile',  component: ProfileComponent, canActivate: [authGuard] },
   // { path: 'inventory', component: InventoryComponent, canActivate: [authGuard] },
 
+
    { path: 'scan',     component: UploadComponent },
   { path: 'shopping', component: ShoppingListComponent },
   { path: 'search',   component: SearchComponent },
-  { path: 'profile',  component: ProfileComponent },
-  { path: 'inventory', component: InventoryComponent},
-
+  { path: 'profile',  component: ProfileComponent},
+  { path: 'inventory', component: InventoryComponent, },
   // Catch-all — redirect unknown paths to home
   { path: '**', redirectTo: '' }
 ];
