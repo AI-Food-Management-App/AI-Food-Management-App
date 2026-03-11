@@ -34,6 +34,10 @@ export class ShoppingListComponent implements OnInit {
   error: string | null = null;
   success: string | null = null;
 
+  expandedHistoryListId: number | null = null;
+  historyItemsMap: Record<number, ShoppingItem[]> = {};
+  historyLoadingMap: Record<number, boolean> = {};
+
   constructor(private shopping: ShoppingListService) {}
 
   async ngOnInit() {
@@ -187,6 +191,32 @@ export class ShoppingListComponent implements OnInit {
     }
   }
 
+  async toggleHistoryList(list: ShoppingList) {
+    const listID = list.listID;
+
+    if (this.expandedHistoryListId === listID) {
+      this.expandedHistoryListId = null;
+      return;
+    }
+
+    this.expandedHistoryListId = listID;
+
+    if (this.historyItemsMap[listID]) return;
+
+    this.historyLoadingMap[listID] = true;
+    this.error = null;
+
+    try {
+      this.historyItemsMap[listID] = await firstValueFrom(
+        this.shopping.getHistoryListItems(listID)
+      );
+    } catch (e: any) {
+      this.error = e?.error?.error || e?.message || "Failed to load history items";
+    } finally {
+      this.historyLoadingMap[listID] = false;
+    }
+  }
+
   get checkedCount(): number {
     return this.items.filter(i => i.checked).length;
   }
@@ -194,6 +224,18 @@ export class ShoppingListComponent implements OnInit {
   formatDate(date?: string | null): string {
     if (!date) return "";
     return new Date(date).toLocaleString();
+  }
+
+  getHistoryItems(listID: number): ShoppingItem[] {
+    return this.historyItemsMap[listID] ?? [];
+  }
+
+  isHistoryOpen(listID: number): boolean {
+    return this.expandedHistoryListId === listID;
+  }
+
+  isHistoryLoading(listID: number): boolean {
+    return !!this.historyLoadingMap[listID];
   }
 
   trackByItemId(_: number, item: ShoppingItem) {
