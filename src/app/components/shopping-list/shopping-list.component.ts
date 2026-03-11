@@ -103,27 +103,39 @@ export class ShoppingListComponent implements OnInit {
     }
   }
 
-  async addToShoppingList() {
-    if (!this.openList?.listID) return;
+async addToShoppingList() {
+  if (!this.openList?.listID) return;
 
-    const name = this.newName.trim();
-    if (!name) return;
-
-    this.adding = true;
-    this.error = null;
-    this.success = null;
-
-    try {
-      await firstValueFrom(this.shopping.addItem(this.openList.listID, name, this.newQty));
-      this.newName = "";
-      this.newQty = null;
-      await this.loadOpenList();
-    } catch (e: any) {
-      this.error = e?.error?.error || e?.message || "Failed to add item";
-    } finally {
-      this.adding = false;
-    }
+  const name = this.newName.trim();
+  if (!name) {
+    this.error = "Item name is required";
+    return;
   }
+
+  let qty = Number(this.newQty ?? 1);
+  if (!Number.isFinite(qty)) qty = 1;
+  qty = Math.floor(qty);
+
+  if (qty < 1) {
+    this.error = "Quantity must be at least 1";
+    return;
+  }
+
+  this.adding = true;
+  this.error = null;
+  this.success = null;
+
+  try {
+    await firstValueFrom(this.shopping.addItem(this.openList.listID, name, qty));
+    this.newName = "";
+    this.newQty = 1;
+    await this.loadOpenList();
+  } catch (e: any) {
+    this.error = e?.error?.error || e?.message || "Failed to add item";
+  } finally {
+    this.adding = false;
+  }
+}
 
   async toggle(item: ShoppingItem, event: Event) {
     if (!this.openList?.listID) return;
