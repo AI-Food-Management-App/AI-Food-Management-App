@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component ,ChangeDetectionStrategy} from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../services/auth.services';
@@ -9,6 +9,7 @@ import { AuthService } from '../../services/auth.services';
   imports: [CommonModule, RouterModule],
   templateUrl: './home.html',
   styleUrl: './home.css',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class Home {
   constructor(public auth: AuthService) {}

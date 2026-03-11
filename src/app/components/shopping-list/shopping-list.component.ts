@@ -1,4 +1,4 @@
-import { Component, OnInit } from "@angular/core";
+import { ChangeDetectionStrategy, Component, OnInit } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { FormsModule } from "@angular/forms";
 import { firstValueFrom } from "rxjs";
@@ -14,6 +14,7 @@ import {
   imports: [CommonModule, FormsModule],
   templateUrl: "./shopping-list.component.html",
   styleUrl: "./shopping-list.component.css",
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ShoppingListComponent implements OnInit {
   openList: ShoppingList | null = null;
@@ -174,7 +175,7 @@ async addToShoppingList() {
 
     try {
       const resp = await firstValueFrom(this.shopping.confirmChecked(this.openList.listID));
-      await this.loadOpenList();
+      this.items = this.items.filter(i => !i.checked);
       this.success = resp.moved > 0
         ? `${resp.moved} checked item(s) moved to inventory`
         : (resp.message || "No checked items to confirm");
