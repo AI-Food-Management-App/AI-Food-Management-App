@@ -6,27 +6,26 @@
     </h1>
     <p class="lead mb-4">Try out our features!</p>
 
-    <div class="d-flex justify-content-center gap-3">
-
-      <!-- Show login/register if NOT logged in -->
-      <ng-container *ngIf="!auth.isLoggedIn()">
-        <a routerLink="/login" class="btn btn-lg btn-primary rounded-pill px-4">
+   <div class="d-flex justify-content-center gap-3">
+     <!-- Logged out — show Login and Register -->
+      <ng-container *ngIf="!auth.loggedIn()">
+       <a routerLink="/login" class="btn btn-lg btn-primary rounded-pill px-4">
           Login
-        </a>
-        <a routerLink="/register" class="btn btn-lg btn-outline-light rounded-pill px-4">
-          Register
-        </a>
-      </ng-container>
+       </a>
+       <a routerLink="/register" class="btn btn-lg btn-outline-light rounded-pill px-4">
+         Register
+       </a>
+     </ng-container>
 
-      <!-- Show app buttons if logged in -->
-      <ng-container *ngIf="auth.isLoggedIn()">
-        <a routerLink="/login" class="btn btn-lg btn-primary rounded-pill px-4">
-          Login
+      <!-- Logged in — show Scan and Shopping -->
+     <ng-container *ngIf="auth.loggedIn()">
+        <a routerLink="/scan" class="btn btn-lg btn-primary rounded-pill px-4">
+          Scan Groceries
         </a>
-        <a routerLink="/register" class="btn btn-lg btn-outline-light rounded-pill px-4">
-          Register
-        </a>
-      </ng-container>
+        <a routerLink="/shopping" class="btn btn-lg btn-outline-light rounded-pill px-4">
+          Shopping List
+       </a>
+     </ng-container>
 
     </div>
   </div>

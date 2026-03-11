@@ -1,4 +1,4 @@
-import { Injectable,Inject } from '@angular/core';
+import { Injectable,Inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { tap } from 'rxjs/operators';
@@ -11,11 +11,12 @@ export class AuthService {
   //private api = '/api';
   //api is pulling to a local host, but in production it should be the actual backend URL
 
-  
+  loggedIn = signal<boolean>(!!localStorage.getItem(this.TOKEN_KEY));
+
   constructor(private router: Router,private http: HttpClient,
     @Inject(API_BASE_URL) private apiBaseUrl: string) {}
 
-register(payload: { name: string; dob: string; email: string; password: string }) {
+ register(payload: { name: string; dob: string; email: string; password: string }) {
     return this.http.post(`${this.apiBaseUrl}/auth/register`, payload);
 }
 
@@ -24,12 +25,14 @@ login(email: string, password: string) {
       .pipe(tap(res => {
         localStorage.setItem(this.TOKEN_KEY, res.token);
         localStorage.setItem(this.USER_KEY, JSON.stringify(res.user));
+        this.loggedIn.set(true);
       }));
 }
 
 logout() {
     localStorage.removeItem(this.TOKEN_KEY);
     localStorage.removeItem(this.USER_KEY);
+    this.loggedIn.set(false);
     this.router.navigate(['/login']);
 }
 
@@ -38,7 +41,7 @@ getToken(): string | null {
 }
 
 isLoggedIn(): boolean {
-    return !!this.getToken();
+    return this.loggedIn();
 }
 
 getUser(): any {

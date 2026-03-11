@@ -14,7 +14,7 @@ import { AuthService } from './services/auth.services';
 export class App implements OnInit {
 
   constructor(private router: Router,
-    public authService: AuthService
+    public auth: AuthService
   ) {}
 
   ngOnInit() {
@@ -31,6 +31,6 @@ export class App implements OnInit {
   }
 
   logout() {
-    this.authService.logout();  // clears token and redirects to /login
+    this.auth.logout();  // clears token and redirects to /login
   }
 }

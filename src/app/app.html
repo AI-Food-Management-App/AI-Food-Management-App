@@ -41,7 +41,7 @@
           </li>
 
           <!-- Logout button — only visible when logged in -->
-          <li class="nav-item ms-lg-3 mt-2 mt-lg-0" *ngIf="authService.isLoggedIn()">
+          <li class="nav-item ms-lg-3 mt-2 mt-lg-0" *ngIf="auth.isLoggedIn()">
             <button class="btn btn-logout rounded-pill px-3" (click)="logout()">
               Log Out
             </button>
