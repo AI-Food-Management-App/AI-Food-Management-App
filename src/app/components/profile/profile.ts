@@ -1,7 +1,6 @@
-import { Component, OnInit , ChangeDetectionStrategy} from '@angular/core';
+import { Component, OnInit , } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormsModule, FormBuilder, FormGroup } from '@angular/forms';
-import { Router } from '@angular/router';
 import { ProfileService } from '../../services/profile.service';
 import { AuthService } from '../../services/auth.services';
 import { Profile } from '../../interface/profile';
@@ -13,7 +12,6 @@ import { nameValidator, minAgeValidator } from '../validators/auth.validators';
   imports: [CommonModule, ReactiveFormsModule, FormsModule],
   templateUrl: './profile.html',
   styleUrls: ['./profile.css'],
-  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ProfileComponent implements OnInit {
   profile: Profile | null = null;

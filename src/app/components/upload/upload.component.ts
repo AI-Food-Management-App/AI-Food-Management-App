@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, OnInit } from "@angular/core";
+import { Component, OnInit } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { FormsModule } from "@angular/forms";
 import { firstValueFrom } from "rxjs";
@@ -11,7 +11,6 @@ import { FridgeService, FridgeItem, Category } from "../../services/fridge.servi
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: "./upload.component.html",
-  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class UploadComponent implements OnInit {
   userID = 1;

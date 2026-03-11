@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, OnInit } from "@angular/core";
+import { Component, OnInit } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { FormsModule } from "@angular/forms";
 import { firstValueFrom } from "rxjs";
@@ -14,7 +14,6 @@ import {
   imports: [CommonModule, FormsModule],
   templateUrl: "./shopping-list.component.html",
   styleUrl: "./shopping-list.component.css",
-  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ShoppingListComponent implements OnInit {
   openList: ShoppingList | null = null;

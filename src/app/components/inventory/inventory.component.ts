@@ -1,4 +1,4 @@
-import { Component, OnInit , ChangeDetectionStrategy} from "@angular/core";
+import { Component, OnInit } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { FormsModule } from "@angular/forms";
 import { firstValueFrom } from "rxjs";
@@ -10,7 +10,6 @@ import { Category, FridgeService, FridgeItem } from "../../services/fridge.servi
   imports: [CommonModule, FormsModule],
   templateUrl: "./inventory.component.html",
   styleUrl: "./inventory.component.css",
-  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class InventoryComponent implements OnInit {
   fridgeItems: FridgeItem[] = [];
