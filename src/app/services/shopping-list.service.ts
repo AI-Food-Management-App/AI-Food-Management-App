@@ -42,6 +42,10 @@ export class ShoppingListService {
     return this.http.get<ShoppingItem[]>(`${this.apiBaseUrl}/shopping-lists/${listID}`);
   }
 
+  getHistoryListItems(listID: number): Observable<ShoppingItem[]> {
+    return this.http.get<ShoppingItem[]>(`${this.apiBaseUrl}/shopping-lists/${listID}`);
+  }
+
   addItem(listID: number, name: string, quantity?: number | null) {
     return this.http.post(`${this.apiBaseUrl}/shopping-lists/${listID}/items`, {
       name,

@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit , ChangeDetectionStrategy} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormsModule, FormBuilder, FormGroup } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -12,7 +12,8 @@ import { nameValidator, minAgeValidator } from '../validators/auth.validators';
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, FormsModule],
   templateUrl: './profile.html',
-  styleUrls: ['./profile.css']
+  styleUrls: ['./profile.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ProfileComponent implements OnInit {
   profile: Profile | null = null;
@@ -29,8 +30,7 @@ export class ProfileComponent implements OnInit {
   constructor(
     private profileService: ProfileService,
     private authService: AuthService,
-    private fb: FormBuilder,
-    private router: Router
+    private fb: FormBuilder
   ) {}
 
   ngOnInit() {

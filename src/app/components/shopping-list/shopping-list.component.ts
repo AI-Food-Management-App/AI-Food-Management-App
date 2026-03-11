@@ -1,4 +1,4 @@
-import { Component, OnInit } from "@angular/core";
+import { ChangeDetectionStrategy, Component, OnInit } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { FormsModule } from "@angular/forms";
 import { firstValueFrom } from "rxjs";
@@ -14,6 +14,7 @@ import {
   imports: [CommonModule, FormsModule],
   templateUrl: "./shopping-list.component.html",
   styleUrl: "./shopping-list.component.css",
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ShoppingListComponent implements OnInit {
   openList: ShoppingList | null = null;
@@ -33,6 +34,10 @@ export class ShoppingListComponent implements OnInit {
 
   error: string | null = null;
   success: string | null = null;
+
+  expandedHistoryListId: number | null = null;
+  historyItemsMap: Record<number, ShoppingItem[]> = {};
+  historyLoadingMap: Record<number, boolean> = {};
 
   constructor(private shopping: ShoppingListService) {}
 
@@ -99,27 +104,39 @@ export class ShoppingListComponent implements OnInit {
     }
   }
 
-  async addToShoppingList() {
-    if (!this.openList?.listID) return;
+async addToShoppingList() {
+  if (!this.openList?.listID) return;
 
-    const name = this.newName.trim();
-    if (!name) return;
-
-    this.adding = true;
-    this.error = null;
-    this.success = null;
-
-    try {
-      await firstValueFrom(this.shopping.addItem(this.openList.listID, name, this.newQty));
-      this.newName = "";
-      this.newQty = null;
-      await this.loadOpenList();
-    } catch (e: any) {
-      this.error = e?.error?.error || e?.message || "Failed to add item";
-    } finally {
-      this.adding = false;
-    }
+  const name = this.newName.trim();
+  if (!name) {
+    this.error = "Item name is required";
+    return;
   }
+
+  let qty = Number(this.newQty ?? 1);
+  if (!Number.isFinite(qty)) qty = 1;
+  qty = Math.floor(qty);
+
+  if (qty < 1) {
+    this.error = "Quantity must be at least 1";
+    return;
+  }
+
+  this.adding = true;
+  this.error = null;
+  this.success = null;
+
+  try {
+    await firstValueFrom(this.shopping.addItem(this.openList.listID, name, qty));
+    this.newName = "";
+    this.newQty = 1;
+    await this.loadOpenList();
+  } catch (e: any) {
+    this.error = e?.error?.error || e?.message || "Failed to add item";
+  } finally {
+    this.adding = false;
+  }
+}
 
   async toggle(item: ShoppingItem, event: Event) {
     if (!this.openList?.listID) return;
@@ -158,7 +175,7 @@ export class ShoppingListComponent implements OnInit {
 
     try {
       const resp = await firstValueFrom(this.shopping.confirmChecked(this.openList.listID));
-      await this.loadOpenList();
+      this.items = this.items.filter(i => !i.checked);
       this.success = resp.moved > 0
         ? `${resp.moved} checked item(s) moved to inventory`
         : (resp.message || "No checked items to confirm");
@@ -187,6 +204,32 @@ export class ShoppingListComponent implements OnInit {
     }
   }
 
+  async toggleHistoryList(list: ShoppingList) {
+    const listID = list.listID;
+
+    if (this.expandedHistoryListId === listID) {
+      this.expandedHistoryListId = null;
+      return;
+    }
+
+    this.expandedHistoryListId = listID;
+
+    if (this.historyItemsMap[listID]) return;
+
+    this.historyLoadingMap[listID] = true;
+    this.error = null;
+
+    try {
+      this.historyItemsMap[listID] = await firstValueFrom(
+        this.shopping.getHistoryListItems(listID)
+      );
+    } catch (e: any) {
+      this.error = e?.error?.error || e?.message || "Failed to load history items";
+    } finally {
+      this.historyLoadingMap[listID] = false;
+    }
+  }
+
   get checkedCount(): number {
     return this.items.filter(i => i.checked).length;
   }
@@ -194,6 +237,18 @@ export class ShoppingListComponent implements OnInit {
   formatDate(date?: string | null): string {
     if (!date) return "";
     return new Date(date).toLocaleString();
+  }
+
+  getHistoryItems(listID: number): ShoppingItem[] {
+    return this.historyItemsMap[listID] ?? [];
+  }
+
+  isHistoryOpen(listID: number): boolean {
+    return this.expandedHistoryListId === listID;
+  }
+
+  isHistoryLoading(listID: number): boolean {
+    return !!this.historyLoadingMap[listID];
   }
 
   trackByItemId(_: number, item: ShoppingItem) {

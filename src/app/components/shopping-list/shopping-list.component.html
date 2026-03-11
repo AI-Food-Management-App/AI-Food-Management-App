@@ -47,7 +47,6 @@
           </div>
         </div>
 
-        <!-- Add item -->
         <div class="add-block">
           <div class="section-label">Add item</div>
 
@@ -62,18 +61,23 @@
               <input
                 class="paper-input"
                 type="number"
+                min="1"
                 placeholder="Qty"
                 [(ngModel)]="newQty"
               />
 
-              <button class="paper-btn add-btn" (click)="addToShoppingList()" [disabled]="adding || !newName.trim()">
+              <button
+                class="paper-btn add-btn"
+                (click)="addToShoppingList()"
+                [disabled]="adding || !newName.trim() || (newQty != null && newQty < 1)"
+                >
                 {{ adding ? "Adding..." : "Add" }}
               </button>
+              
             </div>
           </div>
         </div>
 
-        <!-- Checklist -->
         <div class="items-block">
           <div class="items-header">
             <div class="section-label">Items</div>
@@ -114,7 +118,6 @@
           </ng-template>
         </div>
 
-        <!-- Actions -->
         <div class="action-grid">
           <button
             class="paper-btn confirm-btn"
@@ -135,7 +138,7 @@
       </div>
     </div>
 
-    <!-- History section -->
+    <!-- HISTORY -->
     <div class="history-section">
       <div class="history-header">
         <h3>Recent history</h3>
@@ -147,9 +150,45 @@
           class="history-card"
           *ngFor="let list of historyLists; trackBy: trackByListId"
         >
-          <div class="history-name">{{ list.name }}</div>
-          <div class="history-meta">
-            Closed {{ formatDate(list.closedAt) }}
+          <button class="history-toggle" (click)="toggleHistoryList(list)">
+            <div class="history-main">
+              <div class="history-name">{{ list.name }}</div>
+              <div class="history-meta">
+                Closed {{ formatDate(list.closedAt) }}
+              </div>
+            </div>
+
+            <div class="history-chevron">
+              {{ isHistoryOpen(list.listID) ? "−" : "+" }}
+            </div>
+          </button>
+
+          <div class="history-expanded" *ngIf="isHistoryOpen(list.listID)">
+            <div class="loading-line" *ngIf="isHistoryLoading(list.listID)">
+              Loading items...
+            </div>
+
+            <div *ngIf="!isHistoryLoading(list.listID)">
+              <div
+                class="history-item-line"
+                *ngFor="let item of getHistoryItems(list.listID); trackBy: trackByItemId"
+              >
+                <div class="history-item-name">
+                  <span class="history-checkmark">{{ item.checked ? "✓" : "•" }}</span>
+                  {{ item.name }}
+                </div>
+                <div class="history-item-qty" *ngIf="item.quantity !== null">
+                  Qty {{ item.quantity }}
+                </div>
+              </div>
+
+              <div
+                class="history-empty-items"
+                *ngIf="getHistoryItems(list.listID).length === 0"
+              >
+                No items saved for this list.
+              </div>
+            </div>
           </div>
         </div>
       </div>
