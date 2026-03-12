@@ -4,7 +4,9 @@ import { RouterModule } from '@angular/router';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.services';
-import { emailValidator, noWhitespaceValidator, passwordValidator } from '../validators/auth.validators';
+import { emailValidator, 
+  //noWhitespaceValidator, 
+  passwordValidator } from '../validators/auth.validators';
 @Component({
   selector: 'app-login',
   standalone: true,
@@ -23,8 +25,11 @@ export class LoginComponent {
     private router: Router
   ) {
     this.form = this.fb.group({
-      email:    ['', [Validators.required, noWhitespaceValidator(), emailValidator()]],
-      password: ['', [Validators.required, noWhitespaceValidator(), passwordValidator()]]
+      // email:    ['', [Validators.required, noWhitespaceValidator(), emailValidator()]],
+      // password: ['', [Validators.required, noWhitespaceValidator(), passwordValidator()]]
+            email: ['', [Validators.required,  emailValidator()]],
+      password: ['', [Validators.required,  passwordValidator()]],
+      confirmPassword: ['', [Validators.required]]
     });
   }
 
@@ -35,10 +40,10 @@ export class LoginComponent {
     if (!ctrl.errors || !ctrl.touched) return '';
     const err = ctrl.errors;
     if (err['required'])     return field === 'email' ? 'Email is required' : 'Password is required';
-    if (err['whitespace'])   return field === 'email' ? 'Email cannot be blank spaces' : 'Password cannot be blank spaces';
+    //if (err['whitespace'])   return field === 'email' ? 'Email cannot be blank spaces' : 'Password cannot be blank spaces';
     if (err['noAt'])         return err['noAt'];
     if (err['invalidEmail']) return err['invalidEmail'];
-    if (err['tooShort'])     return err['tooShort'];
+    //if (err['tooShort'])     return err['tooShort'];
     return 'Invalid value';
   }
 
@@ -47,7 +52,8 @@ export class LoginComponent {
     this.loading  = true;
     this.errorMsg = '';
 
-    const { email, password } = this.form.value.trim();
+    const { email, password } = this.form.value();
+    //const { email, password } = this.form.value.trim();
 
     this.auth.login(email, password).subscribe({
       next: () => this.router.navigate(['/']),

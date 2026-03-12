@@ -10,7 +10,7 @@ import {
   emailValidator,
   passwordValidator,
   passwordMatchValidator,
-  noWhitespaceValidator
+ // noWhitespaceValidator
 } from '../validators/auth.validators';
 
 @Component({
@@ -34,9 +34,12 @@ export class RegisterComponent {
     this.form = this.fb.group({
       name: ['', [Validators.required, nameValidator()]],
       dob: ['', [Validators.required, minAgeValidator(16)]],
-      email: ['', [Validators.required, noWhitespaceValidator(), emailValidator()]],
-      password: ['', [Validators.required, noWhitespaceValidator(), passwordValidator()]],
-      confirmPassword: ['', [Validators.required, noWhitespaceValidator()]]
+      // email: ['', [Validators.required, noWhitespaceValidator(), emailValidator()]],
+      // password: ['', [Validators.required, noWhitespaceValidator(), passwordValidator()]],
+      // confirmPassword: ['', [Validators.required, noWhitespaceValidator()]]
+            email: ['', [Validators.required,  emailValidator()]],
+      password: ['', [Validators.required, passwordValidator()]],
+      confirmPassword: ['', [Validators.required]]
     }, { validators: passwordMatchValidator });
   }
 

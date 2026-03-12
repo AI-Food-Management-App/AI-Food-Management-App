@@ -50,11 +50,11 @@ export function passwordMatchValidator(control: AbstractControl): ValidationErro
   const cpw = group.get('confirmPassword')?.value;
   return pw === cpw ? null : { mismatch: 'Passwords do not match' };
 }
-// No whitespace in the Login
-export function noWhitespaceValidator(): ValidatorFn {
-  return (control: AbstractControl): ValidationErrors | null => {
-    const value = control.value || '';
-    const isWhitespace = value.trim().length === 0 && value.length > 0;
-    return isWhitespace ? { whitespace: true } : null;
-  };
-}
+// // No whitespace in the Login
+// export function noWhitespaceValidator(): ValidatorFn {
+//   return (control: AbstractControl): ValidationErrors | null => {
+//     const value = control.value || '';
+//     const isWhitespace = value.trim().length === 0 && value.length > 0;
+//     return isWhitespace ? { whitespace: true } : null;
+//   };
+// }
