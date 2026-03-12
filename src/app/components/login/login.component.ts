@@ -27,9 +27,9 @@ export class LoginComponent {
     this.form = this.fb.group({
       // email:    ['', [Validators.required, noWhitespaceValidator(), emailValidator()]],
       // password: ['', [Validators.required, noWhitespaceValidator(), passwordValidator()]]
-            email: ['', [Validators.required,  emailValidator()]],
-      password: ['', [Validators.required,  passwordValidator()]],
-      confirmPassword: ['', [Validators.required]]
+        email: ['', [Validators.required,  emailValidator()]],
+        password: ['', [Validators.required,  passwordValidator()]],
+      //confirmPassword: ['', [Validators.required]]
     });
   }
 
@@ -52,8 +52,8 @@ export class LoginComponent {
     this.loading  = true;
     this.errorMsg = '';
 
-    const { email, password } = this.form.value();
-    //const { email, password } = this.form.value.trim();
+  
+    const { email, password } = this.form.value.trim();
 
     this.auth.login(email, password).subscribe({
       next: () => this.router.navigate(['/']),
