@@ -1,7 +1,7 @@
 {
   "/api": {
-    "target": "https://food-server-uf1u.onrender.com",
+    "target": "https://food-server-7mdw.onrender.com",
     "secure": false,
-    "changeOrigin": true 
+    "changeOrigin": true
   }
 }
