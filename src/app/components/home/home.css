@@ -46,32 +46,16 @@
   color: #666;
 }
 
-/* IMAGE PLACEHOLDERS */
 .img{
     width: 200px;
     height: 100px;
     margin-right: 10px;
 }
 
-.img-placeholder {
-  background: #f4f4f4;
-  border-radius: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #999;
-  font-weight: 500;
-}
-
-.img-placeholder.large {
-  height: 220px;
-}
-
-.img-placeholder.phone {
-  height: 320px;
-  width: 200px;
-  margin: auto;
-  border-radius: 30px;
+.imgapp{
+    width: 300px;
+    height: 500px;
+    margin-right: 10px;
 }
 
 /* spacing mobile */
