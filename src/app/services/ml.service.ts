@@ -3,9 +3,25 @@ import { HttpClient } from "@angular/common/http";
 import { Observable } from "rxjs";
 import { API_BASE_URL } from "./api-config";
 
-export type DetectResponse = {
+export type DetectBatchItem = {
+  tempId: string;
+  originalFilename: string;
   ingredient: string | null;
-  error?: string;
+  categoryId?: number | null;
+  categoryName?: string | null;
+  quantity?: number;
+  error?: string | null;
+};
+
+export type DetectBatchResponse = {
+  ok: boolean;
+  results: DetectBatchItem[];
+};
+
+export type SaveDetectedItem = {
+  name: string;
+  quantity?: number;
+  CategoryID?: number | null;
 };
 
 @Injectable({ providedIn: "root" })
@@ -15,20 +31,23 @@ export class MlService {
     @Inject(API_BASE_URL) private apiBaseUrl: string
   ) {}
 
-  detectFood(file: File): Observable<DetectResponse> {
+  detectImages(files: File[]): Observable<DetectBatchResponse> {
     const form = new FormData();
-    form.append("image", file); // must match multer field name
-    return this.http.post<DetectResponse>(`${this.apiBaseUrl}/detect-image`, form);
+    files.forEach(file => form.append("images", file));
+    return this.http.post<DetectBatchResponse>(`${this.apiBaseUrl}/detect-images`, form);
   }
 
-detectAndSave(file: File, userID: number) {
-  const form = new FormData();
-  form.append("image", file);
-  form.append("userID", String(userID));
-  return this.http.post<{ ok: boolean; ingredient: string | null; saved: boolean; error?: string }>(
-    `${this.apiBaseUrl}/detect-and-save`,
-    form
-  );
-}
+  saveDetectedItems(items: SaveDetectedItem[]) {
+    return this.http.post<{ ok: boolean; savedCount: number }>(
+      `${this.apiBaseUrl}/save-detected-items`,
+      { items }
+    );
+  }
 
+  saveSingleDetectedItem(item: SaveDetectedItem) {
+    return this.http.post<{ ok: boolean; saved: boolean }>(
+      `${this.apiBaseUrl}/save-detected-items`,
+      { items: [item] }
+    );
+  }
 }
