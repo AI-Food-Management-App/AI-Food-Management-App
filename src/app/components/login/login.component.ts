@@ -53,7 +53,7 @@ export class LoginComponent {
     this.errorMsg = '';
 
   
-    const { email, password } = this.form.value.trim();
+    const { email, password } = this.form.value;
 
     this.auth.login(email, password).subscribe({
       next: () => this.router.navigate(['/']),
