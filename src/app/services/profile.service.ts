@@ -2,10 +2,12 @@ import { Injectable, Inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Profile } from '../interface/profile';
 import { API_BASE_URL } from "./api-config";
+import { environment } from '../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class ProfileService {
 
+  private api = environment.apiBaseUrl;  // ← uses environment file
 
   constructor(private http: HttpClient,
     @Inject(API_BASE_URL) private apiBaseUrl: string) {}
