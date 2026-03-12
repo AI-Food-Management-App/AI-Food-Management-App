@@ -8,38 +8,37 @@
       </div>
     </div>
 
-    <!-- Search -->
     <div class="search-card">
       <input
         class="search-input"
         type="text"
         placeholder="Search ingredients..."
         [(ngModel)]="invSearch"
-        (input)="loadInventory()"
+        (input)="onSearchChange()"
       />
     </div>
 
-    <!-- Category chips -->
     <div class="chip-row">
       <button
+        type="button"
         class="chip"
         [class.active]="invCategoryId === null"
-        (click)="invCategoryId = null; loadInventory()"
+        (click)="onCategoryChange(null)"
       >
         All
       </button>
 
       <button
+        type="button"
         class="chip"
         *ngFor="let c of categories"
         [class.active]="invCategoryId === c.CategoryID"
-        (click)="invCategoryId = c.CategoryID; loadInventory()"
+        (click)="onCategoryChange(c.CategoryID)"
       >
         {{ c.name }}
       </button>
     </div>
 
-    <!-- Add card -->
     <div class="mobile-card add-card">
       <div class="section-title">Add / Adjust Item</div>
 
@@ -87,11 +86,12 @@
       ></textarea>
 
       <button
+        type="button"
         class="primary-btn"
         (click)="addInventoryManual()"
-        [disabled]="!invNewName.trim()"
+        [disabled]="addingInventory || !invNewName.trim()"
       >
-        Save item
+        {{ addingInventory ? "Saving..." : "Save item" }}
       </button>
 
       <div class="helper-text">
@@ -99,16 +99,14 @@
       </div>
     </div>
 
-    <!-- Loading -->
     <div class="loading-text" *ngIf="invLoading">Loading inventory...</div>
 
-    <!-- List -->
     <div *ngIf="fridgeItems.length; else emptyInv" class="inventory-list">
       <div
         class="mobile-card item-card"
         *ngFor="let item of fridgeItems; trackBy: trackByItemId"
       >
-        <button class="item-main" (click)="toggleExpand(item)">
+        <button type="button" class="item-main" (click)="toggleExpand(item)">
           <div class="item-left">
             <div class="item-title-row">
               <div class="item-title">{{ item.name }}</div>
@@ -127,8 +125,22 @@
           </div>
 
           <div class="item-actions-inline">
-            <button class="qty-btn" (click)="adjustQty(item, -1); $event.stopPropagation()">−</button>
-            <button class="qty-btn" (click)="adjustQty(item, +1); $event.stopPropagation()">+</button>
+            <button
+              type="button"
+              class="qty-btn"
+              (click)="adjustQty(item, -1); $event.stopPropagation()"
+              [disabled]="isAdjustingItem(item.IngredientID)"
+            >
+              −
+            </button>
+            <button
+              type="button"
+              class="qty-btn"
+              (click)="adjustQty(item, +1); $event.stopPropagation()"
+              [disabled]="isAdjustingItem(item.IngredientID)"
+            >
+              +
+            </button>
           </div>
         </button>
 
@@ -160,8 +172,17 @@
           />
 
           <div class="detail-actions">
-            <button class="secondary-btn" (click)="toggleExpand(item)">Close</button>
-            <button class="primary-btn" (click)="saveItemDetails(item)">Save changes</button>
+            <button type="button" class="secondary-btn" (click)="toggleExpand(item)">
+              Close
+            </button>
+            <button
+              type="button"
+              class="primary-btn"
+              (click)="saveItemDetails(item)"
+              [disabled]="isSavingItem(item.IngredientID)"
+            >
+              {{ isSavingItem(item.IngredientID) ? "Saving..." : "Save changes" }}
+            </button>
           </div>
         </div>
       </div>

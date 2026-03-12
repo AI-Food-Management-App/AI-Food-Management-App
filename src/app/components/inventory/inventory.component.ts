@@ -1,4 +1,9 @@
-import { Component, OnInit } from "@angular/core";
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  OnInit
+} from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { FormsModule } from "@angular/forms";
 import { firstValueFrom } from "rxjs";
@@ -10,6 +15,7 @@ import { Category, FridgeService, FridgeItem } from "../../services/fridge.servi
   imports: [CommonModule, FormsModule],
   templateUrl: "./inventory.component.html",
   styleUrl: "./inventory.component.css",
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class InventoryComponent implements OnInit {
   fridgeItems: FridgeItem[] = [];
@@ -30,8 +36,16 @@ export class InventoryComponent implements OnInit {
   invNewTags = "";
 
   expandedItemId: number | null = null;
+  savingItemIds = new Set<number>();
+  adjustingItemIds = new Set<number>();
+  addingInventory = false;
 
-  constructor(private fridge: FridgeService) {}
+  private searchTimer: ReturnType<typeof setTimeout> | null = null;
+
+  constructor(
+    private fridge: FridgeService,
+    private cdr: ChangeDetectorRef
+  ) {}
 
   async ngOnInit() {
     await Promise.all([this.loadCategories()]);
@@ -40,16 +54,21 @@ export class InventoryComponent implements OnInit {
 
   async loadCategories() {
     this.error = null;
+    this.cdr.markForCheck();
+
     try {
       this.categories = await firstValueFrom(this.fridge.getCategories());
     } catch (e: any) {
       this.error = e?.error?.error || e?.message || "Failed to load categories";
+    } finally {
+      this.cdr.markForCheck();
     }
   }
 
   async loadInventory() {
     this.invLoading = true;
     this.error = null;
+    this.cdr.markForCheck();
 
     try {
       this.fridgeItems = await firstValueFrom(
@@ -63,19 +82,37 @@ export class InventoryComponent implements OnInit {
       this.error = e?.error?.error || e?.message || "Failed to load inventory";
     } finally {
       this.invLoading = false;
+      this.cdr.markForCheck();
     }
+  }
+
+  onSearchChange() {
+    if (this.searchTimer) {
+      clearTimeout(this.searchTimer);
+    }
+
+    this.searchTimer = setTimeout(() => {
+      this.loadInventory();
+    }, 300);
+  }
+
+  async onCategoryChange(categoryId: number | null) {
+    this.invCategoryId = categoryId;
+    await this.loadInventory();
   }
 
   async addInventoryManual() {
     const name = this.invNewName.trim();
     if (!name) return;
 
-    const qty = Number(this.invNewQty ?? 1);
-    const tags = this.parseTags(this.invNewTags);
-
+    this.addingInventory = true;
     this.error = null;
+    this.cdr.markForCheck();
 
     try {
+      const qty = Number(this.invNewQty ?? 1);
+      const tags = this.parseTags(this.invNewTags);
+
       await firstValueFrom(
         this.fridge.adjustItem(
           name,
@@ -87,35 +124,55 @@ export class InventoryComponent implements OnInit {
         )
       );
 
+      await this.loadInventory();
+
       this.invNewName = "";
       this.invNewQty = 1;
       this.invNewCategoryId = null;
       this.invNewExpiryDate = null;
       this.invNewDescription = "";
       this.invNewTags = "";
-
-      await this.loadInventory();
     } catch (e: any) {
       this.error = e?.error?.error || e?.message || "Failed to add inventory item";
+    } finally {
+      this.addingInventory = false;
+      this.cdr.markForCheck();
     }
   }
 
   async adjustQty(item: FridgeItem, delta: number) {
+    if (this.adjustingItemIds.has(item.IngredientID)) return;
+
+    this.adjustingItemIds.add(item.IngredientID);
     this.error = null;
+
+    const previousQty = item.quantity;
+    item.quantity = Math.max(0, (item.quantity ?? 0) + delta);
+    this.cdr.markForCheck();
+
     try {
       await firstValueFrom(this.fridge.adjustItem(item.name, delta));
-      await this.loadInventory();
     } catch (e: any) {
+      item.quantity = previousQty;
       this.error = e?.error?.error || e?.message || "Failed to update quantity";
+    } finally {
+      this.adjustingItemIds.delete(item.IngredientID);
+      this.cdr.markForCheck();
     }
   }
 
   toggleExpand(item: FridgeItem) {
     this.expandedItemId = this.expandedItemId === item.IngredientID ? null : item.IngredientID;
+    this.cdr.markForCheck();
   }
 
   async saveItemDetails(item: FridgeItem) {
+    if (this.savingItemIds.has(item.IngredientID)) return;
+
+    this.savingItemIds.add(item.IngredientID);
     this.error = null;
+    this.cdr.markForCheck();
+
     try {
       await firstValueFrom(
         this.fridge.updateItem(item.IngredientID, {
@@ -125,9 +182,16 @@ export class InventoryComponent implements OnInit {
           tags: item.tags ?? []
         })
       );
-      await this.loadInventory();
+
+      const matchedCategory = this.categories.find(c => c.CategoryID === item.CategoryID);
+      if (matchedCategory) {
+        item.category = matchedCategory.name;
+      }
     } catch (e: any) {
       this.error = e?.error?.error || e?.message || "Failed to save item";
+    } finally {
+      this.savingItemIds.delete(item.IngredientID);
+      this.cdr.markForCheck();
     }
   }
 
@@ -140,6 +204,14 @@ export class InventoryComponent implements OnInit {
 
   tagsToString(tags?: string[] | null): string {
     return (tags ?? []).join(", ");
+  }
+
+  isSavingItem(itemId: number): boolean {
+    return this.savingItemIds.has(itemId);
+  }
+
+  isAdjustingItem(itemId: number): boolean {
+    return this.adjustingItemIds.has(itemId);
   }
 
   trackByItemId(_: number, item: FridgeItem) {
