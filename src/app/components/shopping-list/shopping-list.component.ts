@@ -1,4 +1,9 @@
-import { Component, OnInit } from "@angular/core";
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  OnInit
+} from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { FormsModule } from "@angular/forms";
 import { firstValueFrom } from "rxjs";
@@ -14,6 +19,7 @@ import {
   imports: [CommonModule, FormsModule],
   templateUrl: "./shopping-list.component.html",
   styleUrl: "./shopping-list.component.css",
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ShoppingListComponent implements OnInit {
   openList: ShoppingList | null = null;
@@ -22,7 +28,7 @@ export class ShoppingListComponent implements OnInit {
 
   newListName = "";
   newName = "";
-  newQty: number | null = null;
+  newQty: number | null = 1;
 
   creating = false;
   adding = false;
@@ -38,7 +44,13 @@ export class ShoppingListComponent implements OnInit {
   historyItemsMap: Record<number, ShoppingItem[]> = {};
   historyLoadingMap: Record<number, boolean> = {};
 
-  constructor(private shopping: ShoppingListService) {}
+  togglingItemIds = new Set<number>();
+  deletingItemIds = new Set<number>();
+
+  constructor(
+    private shopping: ShoppingListService,
+    private cdr: ChangeDetectorRef
+  ) {}
 
   async ngOnInit() {
     await this.loadAll();
@@ -54,6 +66,7 @@ export class ShoppingListComponent implements OnInit {
   async loadOpenList() {
     this.loading = true;
     this.error = null;
+    this.cdr.markForCheck();
 
     try {
       this.openList = await firstValueFrom(this.shopping.getOpenList());
@@ -67,101 +80,166 @@ export class ShoppingListComponent implements OnInit {
       this.error = e?.error?.error || e?.message || "Failed to load shopping list";
     } finally {
       this.loading = false;
+      this.cdr.markForCheck();
     }
   }
 
   async loadHistory() {
     this.loadingHistory = true;
+    this.cdr.markForCheck();
+
     try {
       this.historyLists = await firstValueFrom(this.shopping.getHistory());
     } catch (e: any) {
       this.error = e?.error?.error || e?.message || "Failed to load history";
     } finally {
       this.loadingHistory = false;
+      this.cdr.markForCheck();
     }
   }
 
   async create() {
     const name = this.newListName.trim();
-    if (!name) return;
+    if (!name) {
+      this.error = "List name is required";
+      this.cdr.markForCheck();
+      return;
+    }
 
     this.creating = true;
     this.error = null;
     this.success = null;
+    this.cdr.markForCheck();
 
     try {
-      this.openList = await firstValueFrom(this.shopping.createList(name));
+      const created = await firstValueFrom(this.shopping.createList(name));
+      this.openList = created;
       this.newListName = "";
       this.items = [];
+      this.success = "Shopping list created";
+
       await this.loadOpenList();
       await this.loadHistory();
-      this.success = "Shopping list created";
     } catch (e: any) {
       this.error = e?.error?.error || e?.message || "Failed to create list";
     } finally {
       this.creating = false;
+      this.cdr.markForCheck();
     }
   }
 
-async addToShoppingList() {
-  if (!this.openList?.listID) return;
+  async addToShoppingList() {
+    if (!this.openList?.listID) return;
 
-  const name = this.newName.trim();
-  if (!name) {
-    this.error = "Item name is required";
-    return;
+    const name = this.newName.trim();
+    if (!name) {
+      this.error = "Item name is required";
+      this.cdr.markForCheck();
+      return;
+    }
+
+    let qty = Number(this.newQty ?? 1);
+    if (!Number.isFinite(qty)) qty = 1;
+    qty = Math.floor(qty);
+
+    if (qty < 1) {
+      this.error = "Quantity must be at least 1";
+      this.cdr.markForCheck();
+      return;
+    }
+
+    this.adding = true;
+    this.error = null;
+    this.success = null;
+    this.cdr.markForCheck();
+
+    try {
+      const created: any = await firstValueFrom(
+        this.shopping.addItem(this.openList.listID, name, qty)
+      );
+
+      const existingIndex = this.items.findIndex(
+        i => i.ingredientID === created?.ingredientID || i.name.toLowerCase() === name.toLowerCase()
+      );
+
+      if (existingIndex >= 0) {
+        this.items = this.items.map((item, index) =>
+          index === existingIndex
+            ? {
+                ...item,
+                quantity: qty,
+                checked: false
+              }
+            : item
+        );
+      } else {
+        this.items = [
+          {
+            itemID: created?.itemID ?? Date.now(),
+            ingredientID: created?.ingredientID ?? -Date.now(),
+            name,
+            quantity: qty,
+            checked: false
+          },
+          ...this.items
+        ];
+      }
+
+      this.newName = "";
+      this.newQty = 1;
+    } catch (e: any) {
+      this.error = e?.error?.error || e?.message || "Failed to add item";
+    } finally {
+      this.adding = false;
+      this.cdr.markForCheck();
+    }
   }
-
-  let qty = Number(this.newQty ?? 1);
-  if (!Number.isFinite(qty)) qty = 1;
-  qty = Math.floor(qty);
-
-  if (qty < 1) {
-    this.error = "Quantity must be at least 1";
-    return;
-  }
-
-  this.adding = true;
-  this.error = null;
-  this.success = null;
-
-  try {
-    await firstValueFrom(this.shopping.addItem(this.openList.listID, name, qty));
-    this.newName = "";
-    this.newQty = 1;
-    await this.loadOpenList();
-  } catch (e: any) {
-    this.error = e?.error?.error || e?.message || "Failed to add item";
-  } finally {
-    this.adding = false;
-  }
-}
 
   async toggle(item: ShoppingItem, event: Event) {
     if (!this.openList?.listID) return;
+    if (this.togglingItemIds.has(item.itemID)) return;
 
     const checked = (event.target as HTMLInputElement).checked;
+    const previous = item.checked;
+
+    this.togglingItemIds.add(item.itemID);
+    item.checked = checked;
     this.error = null;
+    this.cdr.markForCheck();
 
     try {
-      await firstValueFrom(this.shopping.toggleItem(this.openList.listID, item.itemID, checked));
-      await this.loadOpenList();
+      await firstValueFrom(
+        this.shopping.toggleItem(this.openList.listID, item.itemID, checked)
+      );
     } catch (e: any) {
+      item.checked = previous;
       this.error = e?.error?.error || e?.message || "Failed to update item";
+    } finally {
+      this.togglingItemIds.delete(item.itemID);
+      this.cdr.markForCheck();
     }
   }
 
   async del(item: ShoppingItem) {
     if (!this.openList?.listID) return;
+    if (this.deletingItemIds.has(item.itemID)) return;
 
+    const previousItems = [...this.items];
+
+    this.deletingItemIds.add(item.itemID);
+    this.items = this.items.filter(i => i.itemID !== item.itemID);
     this.error = null;
     this.success = null;
+    this.cdr.markForCheck();
 
     try {
       await firstValueFrom(this.shopping.deleteItem(this.openList.listID, item.itemID));
-      await this.loadOpenList();
     } catch (e: any) {
+      this.items = previousItems;
       this.error = e?.error?.error || e?.message || "Failed to delete item";
+    } finally {
+      this.deletingItemIds.delete(item.itemID);
+      this.cdr.markForCheck();
     }
   }
 
@@ -171,6 +249,9 @@ async addToShoppingList() {
     this.confirming = true;
     this.error = null;
     this.success = null;
+    this.cdr.markForCheck();
+
+    const previousItems = [...this.items];
 
     try {
       const resp = await firstValueFrom(this.shopping.confirmChecked(this.openList.listID));
@@ -179,9 +260,11 @@ async addToShoppingList() {
         ? `${resp.moved} checked item(s) moved to inventory`
         : (resp.message || "No checked items to confirm");
     } catch (e: any) {
+      this.items = previousItems;
       this.error = e?.error?.error || e?.message || "Failed to confirm checked items";
     } finally {
       this.confirming = false;
+      this.cdr.markForCheck();
     }
   }
 
@@ -191,15 +274,28 @@ async addToShoppingList() {
     this.closing = true;
     this.error = null;
     this.success = null;
+    this.cdr.markForCheck();
+
+    const previousOpenList = this.openList;
+    const previousItems = [...this.items];
 
     try {
-      await firstValueFrom(this.shopping.closeList(this.openList.listID));
+      const resp = await firstValueFrom(this.shopping.closeList(this.openList.listID));
+
+      if (resp?.list) {
+        this.historyLists = [resp.list, ...this.historyLists];
+      }
+
+      this.openList = null;
+      this.items = [];
       this.success = "Shopping list closed";
-      await this.loadAll();
     } catch (e: any) {
+      this.openList = previousOpenList;
+      this.items = previousItems;
       this.error = e?.error?.error || e?.message || "Failed to close list";
     } finally {
       this.closing = false;
+      this.cdr.markForCheck();
     }
   }
 
@@ -208,15 +304,18 @@ async addToShoppingList() {
 
     if (this.expandedHistoryListId === listID) {
       this.expandedHistoryListId = null;
+      this.cdr.markForCheck();
       return;
     }
 
     this.expandedHistoryListId = listID;
+    this.cdr.markForCheck();
 
     if (this.historyItemsMap[listID]) return;
 
     this.historyLoadingMap[listID] = true;
     this.error = null;
+    this.cdr.markForCheck();
 
     try {
       this.historyItemsMap[listID] = await firstValueFrom(
@@ -226,6 +325,7 @@ async addToShoppingList() {
       this.error = e?.error?.error || e?.message || "Failed to load history items";
     } finally {
       this.historyLoadingMap[listID] = false;
+      this.cdr.markForCheck();
     }
   }
 
@@ -248,6 +348,10 @@ async addToShoppingList() {
 
   isHistoryLoading(listID: number): boolean {
     return !!this.historyLoadingMap[listID];
+  }
+
+  isItemBusy(itemID: number): boolean {
+    return this.togglingItemIds.has(itemID) || this.deletingItemIds.has(itemID);
   }
 
   trackByItemId(_: number, item: ShoppingItem) {

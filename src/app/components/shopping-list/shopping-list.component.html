@@ -14,7 +14,6 @@
       {{ success }}
     </div>
 
-    <!-- CREATE NEW LIST -->
     <div class="paper-card" *ngIf="!openList">
       <div class="paper-inner">
         <h3 class="paper-title">Create a new shopping list</h3>
@@ -27,14 +26,18 @@
             [(ngModel)]="newListName"
           />
 
-          <button class="paper-btn primary" (click)="create()" [disabled]="creating || !newListName.trim()">
+          <button
+            type="button"
+            class="paper-btn primary"
+            (click)="create()"
+            [disabled]="creating || !newListName.trim()"
+          >
             {{ creating ? "Creating..." : "Create list" }}
           </button>
         </div>
       </div>
     </div>
 
-    <!-- OPEN LIST -->
     <div class="paper-card" *ngIf="openList">
       <div class="paper-inner">
         <div class="paper-header">
@@ -67,13 +70,13 @@
               />
 
               <button
+                type="button"
                 class="paper-btn add-btn"
                 (click)="addToShoppingList()"
                 [disabled]="adding || !newName.trim() || (newQty != null && newQty < 1)"
-                >
+              >
                 {{ adding ? "Adding..." : "Add" }}
               </button>
-              
             </div>
           </div>
         </div>
@@ -98,6 +101,7 @@
                     class="big-check"
                     type="checkbox"
                     [checked]="item.checked"
+                    [disabled]="isItemBusy(item.itemID)"
                     (change)="toggle(item, $event)"
                   />
                   <span class="item-text" [class.checked]="item.checked">
@@ -108,7 +112,14 @@
                   </span>
                 </label>
 
-                <button class="delete-btn" (click)="del(item)">Delete</button>
+                <button
+                  type="button"
+                  class="delete-btn"
+                  (click)="del(item)"
+                  [disabled]="isItemBusy(item.itemID)"
+                >
+                  {{ deletingItemIds.has(item.itemID) ? "..." : "Delete" }}
+                </button>
               </div>
             </div>
           </div>
@@ -120,6 +131,7 @@
 
         <div class="action-grid">
           <button
+            type="button"
             class="paper-btn confirm-btn"
             (click)="confirmChecked()"
             [disabled]="confirming || checkedCount === 0"
@@ -128,6 +140,7 @@
           </button>
 
           <button
+            type="button"
             class="paper-btn close-btn"
             (click)="closeList()"
             [disabled]="closing"
@@ -138,7 +151,6 @@
       </div>
     </div>
 
-    <!-- HISTORY -->
     <div class="history-section">
       <div class="history-header">
         <h3>Recent history</h3>
@@ -150,7 +162,11 @@
           class="history-card"
           *ngFor="let list of historyLists; trackBy: trackByListId"
         >
-          <button class="history-toggle" (click)="toggleHistoryList(list)">
+          <button
+            type="button"
+            class="history-toggle"
+            (click)="toggleHistoryList(list)"
+          >
             <div class="history-main">
               <div class="history-name">{{ list.name }}</div>
               <div class="history-meta">
