@@ -1,5 +1,5 @@
 export const environment = {
   production: true,
-  apiBaseUrl: "https://your-food-server.onrender.com/api"
+  apiBaseUrl: "https://food-server-7mdw.onrender.com"
   // ← you will fill this in after deploying the Node server
 };
