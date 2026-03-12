@@ -9,7 +9,8 @@ import {
   minAgeValidator,
   emailValidator,
   passwordValidator,
-  passwordMatchValidator
+  passwordMatchValidator,
+  noWhitespaceValidator
 } from '../validators/auth.validators';
 
 @Component({
@@ -33,9 +34,9 @@ export class RegisterComponent {
     this.form = this.fb.group({
       name: ['', [Validators.required, nameValidator()]],
       dob: ['', [Validators.required, minAgeValidator(16)]],
-      email: ['', [Validators.required, emailValidator()]],
-      password: ['', [Validators.required, passwordValidator()]],
-      confirmPassword: ['',  Validators.required]
+      email: ['', [Validators.required, noWhitespaceValidator(), emailValidator()]],
+      password: ['', [Validators.required, noWhitespaceValidator(), passwordValidator()]],
+      confirmPassword: ['', [Validators.required, noWhitespaceValidator()]]
     }, { validators: passwordMatchValidator });
   }
 
@@ -51,6 +52,7 @@ export class RegisterComponent {
     if (err['noAt'])         return err['noAt'];
     if (err['invalidEmail']) return err['invalidEmail'];
     if (err['minlength'])    return err['minlength'];
+    if (err['whitespace'])   return `${this.label(field)} cannot be blank spaces`;
     return 'Invalid value';
   }
 
