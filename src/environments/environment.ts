@@ -1,4 +1,4 @@
 export const environment = {
   production: false,
-  apiBaseUrl: "/api"
+  apiBaseUrl: "https://food-server-uf1u.onrender.com/api"
 };

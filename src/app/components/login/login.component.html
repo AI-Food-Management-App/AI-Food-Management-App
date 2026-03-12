@@ -17,6 +17,7 @@
             class="form-control"
             [class.is-invalid]="f['email'].invalid && f['email'].touched"
             placeholder="you@example.com"
+            autocomplete="email"
           />
           <div class="invalid-feedback">{{ getError('email') }}</div>
         </div>
@@ -29,6 +30,7 @@
             class="form-control"
             [class.is-invalid]="f['password'].invalid && f['password'].touched"
             placeholder="Your password"
+            autocomplete="current-password"
           />
           <div class="invalid-feedback">{{ getError('password') }}</div>
         </div>
