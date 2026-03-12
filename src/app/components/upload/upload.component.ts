@@ -35,7 +35,6 @@ type UploadQueueItem = {
 })
 export class UploadComponent implements OnInit, OnDestroy {
   categories: Category[] = [];
-
   queue: UploadQueueItem[] = [];
 
   loadingCategories = false;
@@ -126,7 +125,6 @@ export class UploadComponent implements OnInit, OnDestroy {
     try {
       const files = queued.map(q => q.file);
       const resp = await firstValueFrom(this.ml.detectImages(files));
-
       const results = resp.results ?? [];
 
       queued.forEach((item, index) => {
@@ -146,9 +144,23 @@ export class UploadComponent implements OnInit, OnDestroy {
         item.error = null;
       });
 
-      this.success = "Detection complete";
+      const successCount = queued.filter(item => item.status === "detected").length;
+      const failCount = queued.filter(item => item.status === "error").length;
+
+      if (successCount > 0 && failCount > 0) {
+        this.success = `Detection finished: ${successCount} succeeded, ${failCount} failed`;
+        this.error = null;
+      } else if (successCount > 0) {
+        this.success = `Detection complete: ${successCount} item(s) detected`;
+        this.error = null;
+      } else {
+        this.success = null;
+        this.error = "Detection failed for all selected images";
+      }
     } catch (e: any) {
       this.error = e?.error?.error || e?.message || "Detection failed";
+      this.success = null;
+
       queued.forEach(item => {
         item.status = "error";
         item.error = item.error || "Detection failed";
