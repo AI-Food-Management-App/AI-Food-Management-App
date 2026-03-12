@@ -1,12 +1,10 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { RouterModule, Router } from '@angular/router';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.services';
-import { emailValidator, 
-  //noWhitespaceValidator, 
-  passwordValidator } from '../validators/auth.validators';
+import { emailValidator, passwordValidator } from '../validators/auth.validators';
+
 @Component({
   selector: 'app-login',
   standalone: true,
@@ -16,7 +14,7 @@ import { emailValidator,
 })
 export class LoginComponent {
   form: FormGroup;
-  loading  = false;
+  loading = false;
   errorMsg = '';
 
   constructor(
@@ -25,43 +23,46 @@ export class LoginComponent {
     private router: Router
   ) {
     this.form = this.fb.group({
-      // email:    ['', [Validators.required, noWhitespaceValidator(), emailValidator()]],
-      // password: ['', [Validators.required, noWhitespaceValidator(), passwordValidator()]]
-        email: ['', [Validators.required,  emailValidator()]],
-        password: ['', [Validators.required,  passwordValidator()]],
-      //confirmPassword: ['', [Validators.required]]
+      email: ['', [Validators.required, emailValidator()]],
+      password: ['', [Validators.required, passwordValidator()]]
     });
   }
 
-  get f() { return this.form.controls; }
+  get f() {
+    return this.form.controls;
+  }
 
   getError(field: string): string {
     const ctrl = this.f[field];
     if (!ctrl.errors || !ctrl.touched) return '';
+
     const err = ctrl.errors;
-    if (err['required'])     return field === 'email' ? 'Email is required' : 'Password is required';
-    //if (err['whitespace'])   return field === 'email' ? 'Email cannot be blank spaces' : 'Password cannot be blank spaces';
-    if (err['noAt'])         return err['noAt'];
+    if (err['required']) return field === 'email' ? 'Email is required' : 'Password is required';
+    if (err['noAt']) return err['noAt'];
     if (err['invalidEmail']) return err['invalidEmail'];
-    //if (err['tooShort'])     return err['tooShort'];
     return 'Invalid value';
   }
 
   onSubmit() {
-    if (this.form.invalid) { this.form.markAllAsTouched(); return; }
-    this.loading  = true;
+    if (this.form.invalid) {
+      this.form.markAllAsTouched();
+      return;
+    }
+
+    this.loading = true;
     this.errorMsg = '';
 
-  
     const { email, password } = this.form.value;
 
     this.auth.login(email, password).subscribe({
-      next: () => this.router.navigate(['/']),
+      next: () => {
+        this.loading = false;
+        this.router.navigate(['/']);
+      },
       error: err => {
         this.errorMsg = err.error?.error || 'Login failed. Please try again.';
-        this.loading  = false;
+        this.loading = false;
       }
     });
-
   }
 }
